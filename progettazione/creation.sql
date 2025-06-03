@@ -6,47 +6,47 @@ CREATE TABLE Amministratore (
 
 CREATE TABLE Utente (
     IdUtente INT PRIMARY KEY,
-    Tipo VARCHAR(50),
-    Nome VARCHAR(100),
-    Cognome VARCHAR(100),
-    Email VARCHAR(100) UNIQUE,
-    Password VARCHAR(100),
-    DataDiNascita DATE,
-    Residenza VARCHAR(255),
-    RAL DECIMAL(10,2),
-    DataDiAssunzione DATE,
-    TipoDiContratto VARCHAR(100),
-    IBAN VARCHAR(34),
-    FerieAccumulate INT,
-    IdManager INT,
+    Tipo VARCHAR(10) NOT NULL CHECK(Tipo IN ('Dipendente', 'Manager')),
+    Nome VARCHAR(100) NOT NULL,
+    Cognome VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Password VARCHAR(100) NOT NULL,
+    DataDiNascita DATE NOT NULL ,
+    Residenza VARCHAR(255) NOT NULL,
+    RAL DECIMAL(10,2) NOT NULL,
+    DataDiAssunzione DATE NOT NULL,
+    TipoDiContratto VARCHAR(13) NOT NULL CHECK(TipoDiContratto IN ('FullTime', 'PartTime',"Stage","Apprendistato")),
+    IBAN VARCHAR(27) CHECK(LEN(CAP)=27),
+    FerieAccumulate INT NOT NULL,
+    IdManager INT OT NULL,
     FOREIGN KEY (IdManager) REFERENCES Utente(IdUtente)
 );
 
 CREATE TABLE Progetto (
     IdProgetto INT PRIMARY KEY,
-    NomeProgetto VARCHAR(100),
-    Concluso BOOLEAN,
-    Deadline DATE
+    NomeProgetto VARCHAR(100) NOT NULL,
+    Concluso BOOLEAN NOT NULL,
+    Deadline DATE NOT NULL
 );
 
 CREATE TABLE Comunicazione (
     IdComunicazione INT PRIMARY KEY,
-    Tipo VARCHAR(50),
-    Testo TEXT,
-    IdProgetto INT,
+    Tipo VARCHAR(8) NOT NULL CHECK(Tipo IN ('Progetto', 'Forum')),
+    Testo TEXT NOT NULL,
+    IdProgetto INT NOT NULL,
     FOREIGN KEY (IdProgetto) REFERENCES Progetto(IdProgetto)
 );
 
 CREATE TABLE GiornataDiLavoro (
     IdGiornata INT PRIMARY KEY,
-    Data DATE
+    Data DATE NOT NULL
 );
 
 CREATE TABLE Valuta (
     IdValuta INT PRIMARY KEY,
-    IdAmministratore INT,
-    Nome VARCHAR(50),
-    Simbolo VARCHAR(10),
+    IdAmministratore INT NOT NULL,
+    Nome VARCHAR(3) NOT NULL CHECK(LEN(Nome)=3),
+    Simbolo VARCHAR(1) CHECK(LEN(Nome)=1),,
     FOREIGN KEY (IdAmministratore) REFERENCES Amministratore(IdAmministratore)
 );
 
