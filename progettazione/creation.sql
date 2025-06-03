@@ -1,11 +1,11 @@
 CREATE TABLE Amministratore (
-    IdAmministratore INT PRIMARY KEY,
+    IdAmministratore INT SERIAL PRIMARY KEY AUTO_INCREMENT,
     Email VARCHAR(100) UNIQUE NOT NULL,
     Password VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE Utente (
-    IdUtente INT PRIMARY KEY,
+    IdUtente INT SERIAL PRIMARY KEY,
     Tipo VARCHAR(10) NOT NULL CHECK(Tipo IN ('Dipendente', 'Manager')),
     Nome VARCHAR(100) NOT NULL,
     Cognome VARCHAR(100) NOT NULL,
@@ -23,14 +23,14 @@ CREATE TABLE Utente (
 );
 
 CREATE TABLE Progetto (
-    IdProgetto INT PRIMARY KEY,
+    IdProgetto INT SERIAL PRIMARY KEY,
     NomeProgetto VARCHAR(100) NOT NULL,
     Concluso BOOLEAN NOT NULL,
     Deadline DATE NOT NULL
 );
 
 CREATE TABLE Comunicazione (
-    IdComunicazione INT PRIMARY KEY,
+    IdComunicazione INT SERIAL PRIMARY KEY,
     Tipo VARCHAR(8) NOT NULL CHECK(Tipo IN ('Progetto', 'Forum')),
     Testo TEXT NOT NULL,
     IdProgetto INT NOT NULL,
@@ -38,12 +38,12 @@ CREATE TABLE Comunicazione (
 );
 
 CREATE TABLE GiornataDiLavoro (
-    IdGiornata INT PRIMARY KEY,
+    IdGiornata INT SERIAL PRIMARY KEY,
     Data DATE NOT NULL
 );
 
 CREATE TABLE Valuta (
-    IdValuta INT PRIMARY KEY,
+    IdValuta INT SERIAL PRIMARY KEY,
     IdAmministratore INT NOT NULL,
     Nome VARCHAR(3) NOT NULL CHECK(LEN(Nome)=3),
     Simbolo VARCHAR(1) CHECK(LEN(Nome)=1),
@@ -51,14 +51,14 @@ CREATE TABLE Valuta (
 );
 
 CREATE TABLE ArchivioImmagini (
-    IdImmagini INT PRIMARY KEY,
+    IdImmagini INT SERIAL PRIMARY KEY,
     Immagini BLOB NOT NULL,
     IdComunicazione INT,
     FOREIGN KEY (IdComunicazione) REFERENCES Comunicazione(IdComunicazione)
 );
 
 CREATE TABLE RimborsoSpese (
-    IdRimborso INT PRIMARY KEY,
+    IdRimborso INT SERIAL PRIMARY KEY,
     Approvato BOOLEAN,
     Data DATE NOT NULL,
     Importo DECIMAL(10,2) NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE RimborsoSpese (
 );
 
 CREATE TABLE Evento (
-    IdEvento INT PRIMARY KEY,
+    IdEvento INT SERIAL PRIMARY KEY,
     Approvato BOOLEAN,
     Data DATE NOT NULL,
     Tipo VARCHAR(8) CHECK(Tipo IN('Malattia','Ferie','Permesso','Lavoro')),
@@ -117,3 +117,13 @@ CREATE TABLE Formare (
     FOREIGN KEY (IdEvento) REFERENCES Evento(IdEvento),
     FOREIGN KEY (IdGiornata) REFERENCES GiornataDiLavoro(IdGiornata)
 );
+
+
+CREATE TABLE Afferente (
+    IdManager INT,
+    IdDipedente INT,
+    PRIMARY KEY (IdManager, IdDipedente),
+    FOREIGN KEY (IdDipedente) REFERENCES Dipendente(IdDipedente),
+    FOREIGN KEY (IdManager) REFERENCES Manager(IdManager)
+);
+
