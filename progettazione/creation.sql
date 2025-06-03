@@ -18,7 +18,7 @@ CREATE TABLE Utente (
     TipoDiContratto VARCHAR(13) NOT NULL CHECK(TipoDiContratto IN ('FullTime', 'PartTime',"Stage","Apprendistato")),
     IBAN VARCHAR(27) CHECK(LEN(CAP)=27),
     FerieAccumulate INT NOT NULL,
-    IdManager INT OT NULL,
+    IdManager INT NOT NULL,
     FOREIGN KEY (IdManager) REFERENCES Utente(IdUtente)
 );
 
@@ -46,13 +46,13 @@ CREATE TABLE Valuta (
     IdValuta INT PRIMARY KEY,
     IdAmministratore INT NOT NULL,
     Nome VARCHAR(3) NOT NULL CHECK(LEN(Nome)=3),
-    Simbolo VARCHAR(1) CHECK(LEN(Nome)=1),,
+    Simbolo VARCHAR(1) CHECK(LEN(Nome)=1),
     FOREIGN KEY (IdAmministratore) REFERENCES Amministratore(IdAmministratore)
 );
 
 CREATE TABLE ArchivioImmagini (
     IdImmagini INT PRIMARY KEY,
-    Immagini BLOB,
+    Immagini BLOB NOT NULL,
     IdComunicazione INT,
     FOREIGN KEY (IdComunicazione) REFERENCES Comunicazione(IdComunicazione)
 );
@@ -60,7 +60,7 @@ CREATE TABLE ArchivioImmagini (
 CREATE TABLE RimborsoSpese (
     IdRimborso INT PRIMARY KEY,
     Approvato BOOLEAN,
-    Data DATE,
+    Data DATE NOT NULL,
     Importo DECIMAL(10,2) NOT NULL,
     IdComunicazione INT,
     IdUtente INT,
