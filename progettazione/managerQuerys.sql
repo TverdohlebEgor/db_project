@@ -15,6 +15,11 @@ INSERT INTO Comunicazione (Tipo, Testo, IdProgetto)
 VALUES (?, ?, ?);
 
 
+INSERT INTO Immagine (Immagini, IdComunicazione)
+VALUES (?, ?);
+---Per ogni immagine nella comunicazione va inserita con l'IdComunicazione relativo
+
+
 INSERT INTO Affarente (IdManager,IdDipedente)
 VALUES (?,?)
 
@@ -54,6 +59,20 @@ SELECT *
 FROM Evento
 WHERE IdUtente = ?
   AND Approvato IS NULL;
+
+
+-- Prendere poi la comunicazioni con relative imamgine, valutare una Join
+
+SELECT *
+FROM Comunicazione
+WHERE IdComunicazione = X;  
+
+
+SELECT *
+FROM Immagine
+WHERE IdComunicazione = X;  
+
+
 
 -- Visualizzare dipendenti (sia quelli suoi(per vedere chi poter aggiungere), che quelli non suoi)
 

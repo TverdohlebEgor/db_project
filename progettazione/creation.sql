@@ -48,8 +48,8 @@ CREATE TABLE Valuta (
     FOREIGN KEY (IdAmministratore) REFERENCES Amministratore(IdAmministratore)
 );
 
-CREATE TABLE ArchivioImmagini (
-    IdImmagini INT SERIAL PRIMARY KEY,
+CREATE TABLE Immagine (
+    IdImmagine INT SERIAL PRIMARY KEY,
     Immagini BLOB NOT NULL,
     IdComunicazione INT,
     FOREIGN KEY (IdComunicazione) REFERENCES Comunicazione(IdComunicazione)
