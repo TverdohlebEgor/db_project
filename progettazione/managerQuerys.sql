@@ -24,9 +24,15 @@ SET Approvato = TRUE
 WHERE IdRimborso = ?;
 
 
+
+-- Visualizzare rimborsi spese (possono esserci più filtri)
+
 SELECT *
 FROM RimborsoSpese
-WHERE IdUtente = 42
+
+SELECT *
+FROM RimborsoSpese
+WHERE IdUtente = ?
   AND Approvato IS NULL;
 
 SELECT *
@@ -39,7 +45,23 @@ UPDATE Evento
 SET Approvato = TRUE
 WHERE IdEvento = ?;
 
+-- Visualizzare eventi (possono esserci più filtri)
+
+SELECT *
+FROM Evento
+
 SELECT *
 FROM Evento
 WHERE IdUtente = ?
   AND Approvato IS NULL;
+
+-- Visualizzare dipendenti (sia quelli suoi(per vedere chi poter aggiungere), che quelli non suoi)
+
+SELECT *
+FROM Dipendente
+
+
+SELECT *
+FROM Utente
+JOIN Afferente ON Utente.IdUtente = Afferente.IdDipendente
+WHERE Afferente.IdManager = ?;

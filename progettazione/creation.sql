@@ -16,10 +16,8 @@ CREATE TABLE Utente (
     RAL DECIMAL(10,2) NOT NULL,
     DataDiAssunzione DATE NOT NULL,
     TipoDiContratto VARCHAR(13) NOT NULL CHECK(TipoDiContratto IN ('FullTime', 'PartTime',"Stage","Apprendistato")),
-    IBAN VARCHAR(27) CHECK(LEN(CAP)=27),
+    IBAN VARCHAR(27) CHECK(LEN(IBAN)=27),
     FerieAccumulate INT NOT NULL,
-    IdManager INT NOT NULL,
-    FOREIGN KEY (IdManager) REFERENCES Utente(IdUtente)
 );
 
 CREATE TABLE Progetto (
@@ -31,7 +29,7 @@ CREATE TABLE Progetto (
 
 CREATE TABLE Comunicazione (
     IdComunicazione INT SERIAL PRIMARY KEY,
-    Tipo VARCHAR(8) NOT NULL CHECK(Tipo IN ('Progetto', 'Forum')),
+    Tipo VARCHAR(9) NOT NULL CHECK(Tipo IN ('Progetto', 'Forum','Richiesta')),
     Testo TEXT NOT NULL,
     IdProgetto INT NOT NULL,
     FOREIGN KEY (IdProgetto) REFERENCES Progetto(IdProgetto)
