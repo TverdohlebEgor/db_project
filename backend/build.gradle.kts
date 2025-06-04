@@ -22,10 +22,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-jdbc")
 	implementation("org.postgresql:postgresql:42.7.3")
+	annotationProcessor("org.projectlombok:lombok:1.18.32")
 
     runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	compileOnly("org.projectlombok:lombok:1.18.32")
 
     
 }

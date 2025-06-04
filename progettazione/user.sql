@@ -43,7 +43,7 @@ INSERT INTO RimborsoSpese (
 VALUES (?,?,?,?,?);
 
 
-NSERT INTO Comunicazione (Tipo, Testo, IdProgetto)
+INSERT INTO Comunicazione (Tipo, Testo, IdProgetto)
 VALUES (?,?,?); 
   
 

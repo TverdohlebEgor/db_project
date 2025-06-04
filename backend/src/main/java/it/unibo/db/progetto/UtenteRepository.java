@@ -30,7 +30,7 @@ public class UtenteRepository {
         TipoContratto.valueOf(normalizeContratto(rs.getString("TipoDiContratto")))
     );
 
-	/*
+	
     public List<Utente> findAll() {
         return jdbc.query("SELECT * FROM Utente", utenteRowMapper);
     }
@@ -38,7 +38,7 @@ public class UtenteRepository {
     public Utente findById(int id) {
         return jdbc.queryForObject("SELECT * FROM Utente WHERE IdUtente = ?", utenteRowMapper, id);
     }
-	*/
+	
 
     private static String normalizeContratto(String dbValue) {
         return dbValue.toUpperCase().replace(" ", "_");
