@@ -1,5 +1,5 @@
 
-function Dipendente() {
+function Dipendente({dipendente}) {
     return (
         <div>
             {"Dipendente"}

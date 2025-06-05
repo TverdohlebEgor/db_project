@@ -7,8 +7,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +35,10 @@ public class UtenteRepository {
         return jdbc.query("SELECT * FROM Utente", utenteRowMapper);
     }
 
+    public List<Utente> findAllEmployees() {
+        return jdbc.query("SELECT * FROM Utente WHERE Tipo = 'Dipendente'", utenteRowMapper);
+    }
+
     public Utente findById(int id) {
         return jdbc.queryForObject("SELECT * FROM Utente WHERE IdUtente = ?", utenteRowMapper, id);
     }
@@ -49,10 +51,22 @@ public class UtenteRepository {
             Utente user = jdbc.queryForObject(
                     "SELECT * FROM Utente WHERE Email = ? AND Password = ?",
                     utenteRowMapper, email, password);
-            return ResponseEntity.ok(user); // 200 OK + utente
+            return ResponseEntity.ok(user);
         } catch (EmptyResultDataAccessException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 401 Unauthorized senza corpo
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+    }
+
+    public ResponseEntity<List<Utente>> findEmployeesOfManager(Map<String, String> body) {
+        System.out.println(body.keySet());
+
+        Integer IdManager = Integer.parseInt(body.get("idUtente"));
+        List<Utente> employees = jdbc.query(
+                "SELECT * FROM Utente JOIN Afferente ON Utente.IdUtente = Afferente.IdDipendente WHERE Afferente.IdManager = ?;",
+                utenteRowMapper, IdManager);
+
+        return ResponseEntity.ok(employees);
+
     }
 
     private static String normalizeContratto(String dbValue) {

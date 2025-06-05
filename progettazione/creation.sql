@@ -121,7 +121,7 @@ CREATE TABLE Afferente (
     IdManager INT,
     IdDipedente INT,
     PRIMARY KEY (IdManager, IdDipedente),
-    FOREIGN KEY (IdDipedente) REFERENCES Dipendente(IdDipedente) ON DELETE CASCADE,
-    FOREIGN KEY (IdManager) REFERENCES Manager(IdManager) ON DELETE CASCADE
+    FOREIGN KEY (IdDipedente) REFERENCES Utente(IdUtente) ON DELETE CASCADE,
+    FOREIGN KEY (IdManager) REFERENCES Utente(IdUtente) ON DELETE CASCADE
 );
 

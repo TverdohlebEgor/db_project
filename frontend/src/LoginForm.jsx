@@ -7,7 +7,7 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [userType, setUserType] = useState(null);
+  const [data,setData] = useState('')
 
 
 
@@ -29,24 +29,20 @@ function LoginForm() {
       });
 
       const data = await response.json();
-      const userType = data.tipo
-      if (userType === 'MANAGER') {
-        setUserType('MANAGER');
-      } else if (userType === 'DIPENDENTE') {
-        setUserType('DIPENDENTE');
-      }
+
+      setData(data)
     } catch (err) {
       setMessage("Errore email o password errati")
 
     }
   };
 
-  if (userType === 'MANAGER') {
-    return <Manager />;
+  if (data.tipo === 'MANAGER') {
+    return <Manager manager={data}/>;
   }
 
-  if (userType === 'DIPENDENTE') {
-    return <Dipendente />;
+  if (data.tipo === 'DIPENDENTE') {
+    return <Dipendente dipendente = {data}/>;
   }
 
   return (
