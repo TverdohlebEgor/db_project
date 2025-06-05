@@ -1,0 +1,14 @@
+.calendar-day {
+   border: 1px solid #dee2e6; /* Bootstrap border color */
+   height: 80px; /* Fixed height for day cells */
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 0; /* Remove default padding for button to fill */
+ }
+ .calendar-day .btn {
+   font-size: 1.2rem;
+ }
+ .empty-day {
+   background-color: #f8f9fa; /* Light gray for empty cells */
+ }
