@@ -40,8 +40,8 @@ enum TipoUtente {
 
 
 enum TipoContratto {
-	FULL_TIME,
-	PART_TIME,
+	FULLTIME,
+	PARTTIME,
 	STAGE,
 	APPRENDISTATO
 }

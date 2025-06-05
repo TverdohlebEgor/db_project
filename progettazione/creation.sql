@@ -43,14 +43,14 @@ CREATE TABLE GiornataDiLavoro (
 CREATE TABLE Valuta (
     IdValuta  SERIAL PRIMARY KEY,
     IdAmministratore INT NOT NULL,
-    Nome VARCHAR(3) NOT NULL CHECK(LEN(Nome)=3),
-    Simbolo VARCHAR(1) CHECK(LEN(Nome)=1),
+    Nome VARCHAR(3) NOT NULL CHECK(LENGTH(Nome)=3),
+    Simbolo VARCHAR(1) CHECK(LENGTH(Simbolo)=1),
     FOREIGN KEY (IdAmministratore) REFERENCES Amministratore(IdAmministratore) ON DELETE SET NULL
 );
 
 CREATE TABLE Immagine (
     IdImmagine  SERIAL PRIMARY KEY,
-    Immagini BLOB NOT NULL,
+    Immagini BYTEA NOT NULL,
     IdComunicazione INT,
     FOREIGN KEY (IdComunicazione) REFERENCES Comunicazione(IdComunicazione) ON DELETE CASCADE
 );
