@@ -46,7 +46,7 @@ public class UtenteRepository {
     public ResponseEntity<List<Utente>> findAllEmployeesNotAssociatedWith(Map<String, String> body) {
         Integer IdManager = Integer.parseInt(body.get("idUtente"));
         List<Utente> employees = jdbc.query(
-                "SELECT * FROM Utente WHERE IdUtente NOT IN (SELECT IdDipendente FROM Afferente WHERE IdManager = ?)",
+                "SELECT * FROM Utente WHERE IdUtente NOT IN (SELECT IdDipendente FROM Afferente WHERE IdManager = ?)  AND Tipo <> 'Manager' ",
                 utenteRowMapper, IdManager);
 
         return ResponseEntity.ok(employees);
@@ -75,27 +75,6 @@ public class UtenteRepository {
 
         return ResponseEntity.ok(employees);
 
-    }
-
-    public ResponseEntity<Boolean> addEvent(Map<String, String> body) {
-        System.out.println(body);
-        /*
-        jdbc.query(
-                "INSERT INTO Evento (\n" +
-                        "    Approvato,\n" +
-                        "    Data,\n" +
-                        "    Tipo,\n" +
-                        "    Straordinario,\n" +
-                        "    OraInizio,\n" +
-                        "    OraFine,\n" +
-                        "    IdUtente,\n" +
-                        "    IdProgetto,\n" +
-                        "    IdComunicazione\n" +
-                        ")\n" +
-                        "VALUES (?,?,?,?,?,?,?,?,?);"
-        );
-        */
-        return ResponseEntity.ok(true);
     }
 
     private static String normalizeContratto(String dbValue) {

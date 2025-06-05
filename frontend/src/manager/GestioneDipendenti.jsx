@@ -76,7 +76,7 @@ function GestioneDipendenti({ manager }) {
 
             {utenti.length > 0 ? (
                 utenti.map((utente) => (
-                    <UserRow key={utente.idUtente} utente={utente} manager={manager} ofManager={ofManger} />
+                    <UserRow key={utente.idUtente} utente={utente} manager={manager} ofManager={ofManger} refreshList={ofManger ? caricaDipendentiAssegnati : caricaDipendentiNonAssegnati} />
                 ))
             ) : (
                 <p>Nessun utente caricato</p>

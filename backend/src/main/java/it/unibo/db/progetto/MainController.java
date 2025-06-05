@@ -18,6 +18,7 @@ import java.util.Map;
 public class MainController {
 
   final UtenteRepository utente;
+  final EventoRepository evento;
 
   @GetMapping("/allEmployees")
   public List<Utente> getAllEmployees() {
@@ -25,7 +26,7 @@ public class MainController {
   }
 
   @PostMapping("/allEmployeesNotAssociatedWith")
-  public  ResponseEntity<List<Utente>> getAllEmployeesNotAssociatedWith(@RequestBody Map<String, String> body) {
+  public ResponseEntity<List<Utente>> getAllEmployeesNotAssociatedWith(@RequestBody Map<String, String> body) {
 
     return utente.findAllEmployeesNotAssociatedWith(body);
   }
@@ -46,6 +47,27 @@ public class MainController {
   public ResponseEntity<List<Utente>> getEmployeesOfManager(@RequestBody Map<String, String> body) {
 
     return utente.findEmployeesOfManager(body);
+
   }
+
+  @PostMapping("/addEmployeeToManager")
+  public ResponseEntity<String> addEmployeeToManager(@RequestBody Map<String, String> body) {
+
+    return utente.addEmployeeToManager(body);
+  }
+
+  @PostMapping("/removeEmployeeFromManager")
+  public ResponseEntity<String> removeEmployeeFromManager(@RequestBody Map<String, String> body) {
+
+    return utente.removeEmployeeFromManager(body);
+  }
+
+   @PostMapping("/getEventPerDay")
+  public ResponseEntity<List<Evento>> getEventPerDay(@RequestBody Map<String, String> body) {
+
+    return evento.getEventPerDay(body);
+  }
+
+
 
 }
