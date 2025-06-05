@@ -30,6 +30,11 @@ public class MainController {
     return utente.findAllEmployeesNotAssociatedWith(body);
   }
 
+  @PostMapping("/add/event")
+  public  ResponseEntity<Boolean> addEvent(@RequestBody Map<String, String> body) {
+    return utente.addEvent(body);
+  }
+
   @PostMapping("/login")
   public ResponseEntity<Utente> loginUser(@RequestBody Map<String, String> body) {
 

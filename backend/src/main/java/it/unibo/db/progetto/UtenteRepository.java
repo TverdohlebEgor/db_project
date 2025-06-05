@@ -77,6 +77,27 @@ public class UtenteRepository {
 
     }
 
+    public ResponseEntity<Boolean> addEvent(Map<String, String> body) {
+        System.out.println(body);
+        /*
+        jdbc.query(
+                "INSERT INTO Evento (\n" +
+                        "    Approvato,\n" +
+                        "    Data,\n" +
+                        "    Tipo,\n" +
+                        "    Straordinario,\n" +
+                        "    OraInizio,\n" +
+                        "    OraFine,\n" +
+                        "    IdUtente,\n" +
+                        "    IdProgetto,\n" +
+                        "    IdComunicazione\n" +
+                        ")\n" +
+                        "VALUES (?,?,?,?,?,?,?,?,?);"
+        );
+        */
+        return ResponseEntity.ok(true);
+    }
+
     private static String normalizeContratto(String dbValue) {
         return dbValue.toUpperCase().replace(" ", "_");
     }
