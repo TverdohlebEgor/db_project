@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import EmployeeInfo from './dipendenti/EmplyeeInfo';
+import EmployeeInfo from './EmployeeInfo';
 
 
 
@@ -69,7 +69,7 @@ function UserRow({ utente, manager, ofManager, refreshList }) {
     }
     return (
         <div className="user-card" style={{ border: "1px solid gray", margin: "10px", padding: "10px" }}>
-            <Button variant="secondary" onClick={() => { return <EmployeeInfo utente={utente} /> }}> {utente.nome} {utente.cognome}</Button>
+            <Button variant="secondary" > {utente.nome} {utente.cognome}</Button>
 
             <p>Email: {utente.email}</p>
 

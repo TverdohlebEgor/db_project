@@ -1,5 +1,6 @@
 package it.unibo.db.progetto;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,11 +31,6 @@ public class MainController {
   public ResponseEntity<List<Utente>> getAllEmployeesNotAssociatedWith(@RequestBody Map<String, String> body) {
 
     return utente.findAllEmployeesNotAssociatedWith(body);
-  }
-
-  @PostMapping("/add/event")
-  public  ResponseEntity<Boolean> addEvent(@RequestBody Map<String, String> body) {
-    return utente.addEvent(body);
   }
 
   @PostMapping("/login")
@@ -73,6 +69,46 @@ public class MainController {
   public ResponseEntity<List<Progetto>> getProjectsPerManager(@RequestBody Map<String, String> body) {
 
     return progetto.getProjectsPerManager(body);
+  }
+
+  @PostMapping("/isUserAssignedToProject")
+  public ResponseEntity<String> isUserAssigned(@RequestBody Map<String, String> body) {
+    return utente.isUserAssignedToProject(body);
+  }
+
+  @PostMapping("/addUserToProject")
+  public ResponseEntity<String> addUserToProject(@RequestBody Map<String, String> body) {
+    return utente.addUserToProject(body);
+  }
+
+  @PostMapping("/removeUserFromProject")
+  public ResponseEntity<String> removeUserFromProject(@RequestBody Map<String, String> body) {
+    return utente.removeUserFromProject(body);
+  }
+
+  @PostMapping("/addProject")
+  public ResponseEntity<String> addProject(@RequestBody Map<String, String> body) {
+    return progetto.addProject(body);
+  }
+
+  @GetMapping("/getAllManagers")
+  public List<Utente> getAllManagers() {
+    return utente.findAllManagers();
+  }
+
+  @PostMapping("/addManagerToProject")
+  public ResponseEntity<String> addManagerToProject(@RequestBody Map<String, String> body) {
+    return utente.addManagerToProject(body);
+  }
+
+  @PostMapping("/removeManagerFromProject")
+  public ResponseEntity<String> removeManagerFromProject(@RequestBody Map<String, String> body) {
+    return utente.removeManagerFromProject(body);
+  }
+
+  @PostMapping("/isManagerAssignedToProject")
+  public ResponseEntity<String> isManagerAssignedToProject(@RequestBody Map<String, String> body) {
+    return utente.isManagerAssignedToProject(body);
   }
 
 }

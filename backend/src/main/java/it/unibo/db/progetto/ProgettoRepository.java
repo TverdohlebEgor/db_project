@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import java.sql.Date;
 
 @Repository
 public class ProgettoRepository {
@@ -39,4 +40,25 @@ public class ProgettoRepository {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
+
+    public ResponseEntity<String> addProject(Map<String, String> body) {
+        try {
+            String nomeProgetto = body.get("nomeProgetto");
+            Date deadline = Date.valueOf(body.get("deadline"));
+            Integer idManager = Integer.parseInt(body.get("idManager"));
+
+            jdbc.update("INSERT INTO Progetto (NomeProgetto, Concluso, Deadline) VALUES (?, ?, ?)",
+                    nomeProgetto, false, deadline);
+
+            Integer idProgetto = jdbc.queryForObject("SELECT MAX(IdProgetto) FROM Progetto", Integer.class);
+
+            jdbc.update("INSERT INTO Coordinare (IdProgetto, IdManager) VALUES (?, ?)", idProgetto, idManager);
+
+            return ResponseEntity.ok("Progetto creato e assegnato al manager");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore nella creazione del progetto");
+        }
+    }
+
 }

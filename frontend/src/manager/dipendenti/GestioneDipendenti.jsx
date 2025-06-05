@@ -1,7 +1,7 @@
 import { Button } from 'react-bootstrap';
 import { jsx } from 'react/jsx-runtime';
 import React, { useState } from 'react';
-import UserRow from '../UserRow';
+import UserRow from './UserRow';
 
 
 function GestioneDipendenti({ manager }) {

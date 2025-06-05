@@ -1,5 +1,6 @@
 package it.unibo.db.progetto;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +76,131 @@ public class UtenteRepository {
 
         return ResponseEntity.ok(employees);
 
+    }
+
+    public ResponseEntity<String> addEmployeeToManager(Map<String, String> body) {
+        try {
+            Integer IdManager = Integer.parseInt(body.get("idManager"));
+            Integer IdDipendente = Integer.parseInt(body.get("idDipendente"));
+
+            jdbc.update("INSERT INTO Afferente (IdManager,IdDipendente) VALUES (?,?)", IdManager, IdDipendente);
+
+            return ResponseEntity.ok("aggiornati");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        }
+
+    }
+
+    public ResponseEntity<String> removeEmployeeFromManager(Map<String, String> body) {
+
+        try {
+            Integer idManager = Integer.parseInt(body.get("idManager"));
+            Integer idDipendente = Integer.parseInt(body.get("idDipendente"));
+
+            jdbc.update("DELETE FROM Afferente WHERE IdManager = ? AND IdDipendente = ?", idManager, idDipendente);
+
+            return ResponseEntity.ok("aggiornati");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        }
+
+    }
+
+    public ResponseEntity<String> isUserAssignedToProject(Map<String, String> body) {
+        try {
+            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+            Integer idUtente = Integer.parseInt(body.get("idUtente"));
+
+            String sql = "SELECT COUNT(*) FROM Attribuire WHERE IdProgetto = ? AND IdDipendente = ?";
+            Integer count = jdbc.queryForObject(sql, Integer.class, idProgetto, idUtente);
+
+            if (count != null && count > 0) {
+                return ResponseEntity.ok("Assegnato");
+            } else {
+                return ResponseEntity.ok("Non assegnato");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore nella richiesta");
+        }
+    }
+
+    public ResponseEntity<String> addUserToProject(Map<String, String> body) {
+        try {
+            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+            Integer idUtente = Integer.parseInt(body.get("idUtente"));
+
+            jdbc.update("INSERT INTO Attribuire (IdProgetto, IdDipendente) VALUES (?, ?)", idProgetto, idUtente);
+
+            return ResponseEntity.ok("Utente aggiunto al progetto");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore durante l'aggiunta");
+        }
+    }
+
+    public ResponseEntity<String> removeUserFromProject(Map<String, String> body) {
+        try {
+            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+            Integer idUtente = Integer.parseInt(body.get("idUtente"));
+
+            jdbc.update("DELETE FROM Attribuire WHERE IdProgetto = ? AND IdDipendente = ?", idProgetto, idUtente);
+
+            return ResponseEntity.ok("Utente rimosso dal progetto");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore durante la rimozione");
+        }
+    }
+
+    public List<Utente> findAllManagers() {
+        return jdbc.query("SELECT * FROM Utente WHERE Tipo = 'Manager'", utenteRowMapper);
+    }
+
+    public ResponseEntity<String> addManagerToProject(Map<String, String> body) {
+        try {
+            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+            Integer idManager = Integer.parseInt(body.get("idManager"));
+
+            jdbc.update("INSERT INTO Coordinare (IdProgetto, IdManager) VALUES (?, ?)", idProgetto, idManager);
+            return ResponseEntity.ok("Manager aggiunto al progetto");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Errore durante l'aggiunta del manager al progetto");
+        }
+    }
+
+    public ResponseEntity<String> removeManagerFromProject(Map<String, String> body) {
+        try {
+            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+            Integer idManager = Integer.parseInt(body.get("idManager"));
+
+            jdbc.update("DELETE FROM Coordinare WHERE IdProgetto = ? AND IdManager = ?", idProgetto, idManager);
+            return ResponseEntity.ok("Manager rimosso dal progetto");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Errore durante la rimozione del manager dal progetto");
+        }
+    }
+
+    public ResponseEntity<String> isManagerAssignedToProject(Map<String, String> body) {
+        try {
+            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+            Integer idManager = Integer.parseInt(body.get("idManager"));
+
+            String sql = "SELECT COUNT(*) FROM Coordinare WHERE IdProgetto = ? AND IdManager = ?";
+            Integer count = jdbc.queryForObject(sql, Integer.class, idProgetto, idManager);
+
+            if (count != null && count > 0) {
+                return ResponseEntity.ok("Assegnato");
+            } else {
+                return ResponseEntity.ok("Non assegnato");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore nella richiesta");
+        }
     }
 
     private static String normalizeContratto(String dbValue) {
