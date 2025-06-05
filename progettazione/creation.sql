@@ -94,10 +94,10 @@ CREATE TABLE Visualizzare (
 
 CREATE TABLE Attribuire (
     IdProgetto INT,
-    IdDipedente INT,
-    PRIMARY KEY (IdProgetto, IdDipedente),
+    IdDipendente INT,
+    PRIMARY KEY (IdProgetto, IdDipendente),
     FOREIGN KEY (IdProgetto) REFERENCES Progetto(IdProgetto) ON DELETE CASCADE,
-    FOREIGN KEY (IdDipedente) REFERENCES Utente(IdUtente) ON DELETE CASCADE
+    FOREIGN KEY (IdDipendente) REFERENCES Utente(IdUtente) ON DELETE CASCADE
 );
 
 CREATE TABLE Coordinare (
@@ -119,9 +119,9 @@ CREATE TABLE Formare (
 
 CREATE TABLE Afferente (
     IdManager INT,
-    IdDipedente INT,
-    PRIMARY KEY (IdManager, IdDipedente),
-    FOREIGN KEY (IdDipedente) REFERENCES Utente(IdUtente) ON DELETE CASCADE,
+    IdDipendente INT,
+    PRIMARY KEY (IdManager, IdDipendente),
+    FOREIGN KEY (IdDipendente) REFERENCES Utente(IdUtente) ON DELETE CASCADE,
     FOREIGN KEY (IdManager) REFERENCES Utente(IdUtente) ON DELETE CASCADE
 );
 

@@ -43,6 +43,15 @@ public class UtenteRepository {
         return jdbc.queryForObject("SELECT * FROM Utente WHERE IdUtente = ?", utenteRowMapper, id);
     }
 
+    public ResponseEntity<List<Utente>> findAllEmployeesNotAssociatedWith(Map<String, String> body) {
+        Integer IdManager = Integer.parseInt(body.get("idUtente"));
+        List<Utente> employees = jdbc.query(
+                "SELECT * FROM Utente WHERE IdUtente NOT IN (SELECT IdDipendente FROM Afferente WHERE IdManager = ?)",
+                utenteRowMapper, IdManager);
+
+        return ResponseEntity.ok(employees);
+    }
+
     public ResponseEntity<Utente> login(Map<String, String> body) {
         String email = body.get("email");
         String password = body.get("password");
@@ -58,11 +67,10 @@ public class UtenteRepository {
     }
 
     public ResponseEntity<List<Utente>> findEmployeesOfManager(Map<String, String> body) {
-        System.out.println(body.keySet());
 
         Integer IdManager = Integer.parseInt(body.get("idUtente"));
         List<Utente> employees = jdbc.query(
-                "SELECT * FROM Utente JOIN Afferente ON Utente.IdUtente = Afferente.IdDipendente WHERE Afferente.IdManager = ?;",
+                "SELECT * FROM Utente JOIN Afferente ON Utente.IdUtente = Afferente.IdDipendente WHERE Afferente.IdManager = ?",
                 utenteRowMapper, IdManager);
 
         return ResponseEntity.ok(employees);

@@ -4,25 +4,28 @@ import React, { useState } from 'react';
 import UserRow from './UserRow';
 
 
-function GestioneDipendenti({manager}) {
+function GestioneDipendenti({ manager }) {
 
     const [utenti, setUtenti] = useState([]);
+
+    const [ofManger, setOfManger] = useState(false);
 
 
     const caricaDipendentiAssegnati = async () => {
 
         try {
             const idUtente = manager.idUtente
-            console.log(idUtente)
             const response = await fetch('http://localhost:8080/api/employeesOfManager', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({idUtente})
+                body: JSON.stringify({ idUtente })
             });
 
             const data = await response.json();
+            setOfManger(true)
+
             setUtenti(data);
 
 
@@ -33,18 +36,25 @@ function GestioneDipendenti({manager}) {
 
     };
 
-    const caricaTuttiIDipendenti = async () => {
+    const caricaDipendentiNonAssegnati = async () => {
+
+
 
         try {
-            const response = await fetch('http://localhost:8080/api/allEmployees', {
-                method: 'GET',
+            const idUtente = manager.idUtente
+            const response = await fetch('http://localhost:8080/api/allEmployeesNotAssociatedWith', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-
+                body: JSON.stringify({ idUtente })
             });
+
             const data = await response.json();
+            setOfManger(false)
             setUtenti(data);
+
+
         } catch (err) {
             console.log(err)
 
@@ -58,15 +68,15 @@ function GestioneDipendenti({manager}) {
         <div>
             <h3>Gestione Dipendenti</h3>
             <Button className="me-2" onClick={caricaDipendentiAssegnati}>
-                Carica Dipendenti Assegnati
+                Carica Dipendenti assegnati a me
             </Button>
-            <Button onClick={caricaTuttiIDipendenti}>
-                Carica Tutti i Dipendenti
+            <Button onClick={caricaDipendentiNonAssegnati}>
+                Carica Dipendenti non asseganti a me
             </Button>
 
             {utenti.length > 0 ? (
                 utenti.map((utente) => (
-                    <UserRow key={utente.idUtente} utente={utente} />
+                    <UserRow key={utente.idUtente} utente={utente} manager={manager} ofManager={ofManger} />
                 ))
             ) : (
                 <p>Nessun utente caricato</p>
