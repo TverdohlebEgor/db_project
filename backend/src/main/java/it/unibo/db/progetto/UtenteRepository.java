@@ -1,5 +1,6 @@
 package it.unibo.db.progetto;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +47,7 @@ public class UtenteRepository {
     public ResponseEntity<List<Utente>> findAllEmployeesNotAssociatedWith(Map<String, String> body) {
         Integer IdManager = Integer.parseInt(body.get("idUtente"));
         List<Utente> employees = jdbc.query(
-                "SELECT * FROM Utente WHERE IdUtente NOT IN (SELECT IdDipendente FROM Afferente WHERE IdManager = ?)",
+                "SELECT * FROM Utente WHERE IdUtente NOT IN (SELECT IdDipendente FROM Afferente WHERE IdManager = ?)  AND Tipo <> 'Manager' ",
                 utenteRowMapper, IdManager);
 
         return ResponseEntity.ok(employees);
@@ -74,6 +75,39 @@ public class UtenteRepository {
                 utenteRowMapper, IdManager);
 
         return ResponseEntity.ok(employees);
+
+    }
+
+    public ResponseEntity<String> addEmployeeToManager(Map<String, String> body) {
+        try {
+            Integer IdManager = Integer.parseInt(body.get("idManager"));
+            Integer IdDipendente = Integer.parseInt(body.get("idDipendente"));
+
+            jdbc.update("INSERT INTO Afferente (IdManager,IdDipendente) VALUES (?,?)", IdManager, IdDipendente);
+
+            return ResponseEntity.ok("aggiornati");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        }
+
+    }
+
+    public ResponseEntity<String> removeEmployeeFromManager(Map<String, String> body) {
+
+        try {
+            Integer idManager = Integer.parseInt(body.get("idManager"));
+            Integer idDipendente = Integer.parseInt(body.get("idDipendente"));
+
+            jdbc.update("DELETE FROM Afferente WHERE IdManager = ? AND IdDipendente = ?", idManager, idDipendente);
+
+            return ResponseEntity.ok("aggiornati");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        }
 
     }
 
