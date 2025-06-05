@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
-import EmployeeInfo from './EmplyeeInfo';
+import EmployeeInfo from './dipendenti/EmplyeeInfo';
 
 
 

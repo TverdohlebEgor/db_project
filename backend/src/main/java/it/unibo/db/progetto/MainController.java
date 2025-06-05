@@ -19,6 +19,7 @@ public class MainController {
 
   final UtenteRepository utente;
   final EventoRepository evento;
+  final ProgettoRepository progetto;
 
   @GetMapping("/allEmployees")
   public List<Utente> getAllEmployees() {
@@ -57,12 +58,16 @@ public class MainController {
     return utente.removeEmployeeFromManager(body);
   }
 
-   @PostMapping("/getEventPerDay")
+  @PostMapping("/getEventPerDay")
   public ResponseEntity<List<Evento>> getEventPerDay(@RequestBody Map<String, String> body) {
 
     return evento.getEventPerDay(body);
   }
 
+  @PostMapping("/getProjectsPerManager")
+  public ResponseEntity<List<Progetto>> getProjectsPerManager(@RequestBody Map<String, String> body) {
 
+    return progetto.getProjectsPerManager(body);
+  }
 
 }
