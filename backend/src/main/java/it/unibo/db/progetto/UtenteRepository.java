@@ -77,6 +77,13 @@ public class UtenteRepository {
 
     }
 
+    public ResponseEntity<Boolean> addEvent(Map<String, String> body) {
+
+        System.out.println(body);
+        return ResponseEntity.ok(true);
+
+    }
+
     private static String normalizeContratto(String dbValue) {
         return dbValue.toUpperCase().replace(" ", "_");
     }

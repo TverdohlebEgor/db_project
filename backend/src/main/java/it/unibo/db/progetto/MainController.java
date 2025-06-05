@@ -37,6 +37,11 @@ public class MainController {
 
   }
 
+  @PostMapping("/add/event")
+  public ResponseEntity<Boolean> addEvent(@RequestBody Map<String, String> body) {
+    return utente.addEvent(body);
+  }
+
   @PostMapping("/employeesOfManager")
   public ResponseEntity<List<Utente>> getEmployeesOfManager(@RequestBody Map<String, String> body) {
 
