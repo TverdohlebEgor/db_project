@@ -10,7 +10,7 @@ function Dipendente({dipendente}) {
             <NavigationBar />
             <Routes>
                 <Route path="/rimborsi" element={<Rimborsi />} />
-                <Route path="/calendario" element={<Calendario />} />
+                <Route path="/calendario" element={<Calendario dipendente = {dipendente}/>} />
                 <Route path="/forum" element={<Forum />} />
             </Routes>
         </Router>

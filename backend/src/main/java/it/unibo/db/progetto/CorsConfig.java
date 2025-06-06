@@ -13,6 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                     "http://localhost:3000", // Common for Create React App
                     "http://localhost:5173", // Common for React Vite
+                        "http://localhost:5174", // Common for React Vite
                     "http://localhost:8080", // If your frontend is also on 8080 for some reason
                     "http://localhost:8081", // Another common dev port
                     "http://127.0.0.1:5500", // Common for VS Code Live Server

@@ -1,51 +1,199 @@
 // EventModal.jsx
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Tabs, Tab, Form, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstrap'; // Added Spinner
 
-const EventModal = ({ show, handleClose, selectedDate }) => {
+const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
+    console.log(idDipendente);
   const [key, setKey] = useState('hours');
   const [eventType, setEventType] = useState('Work');
   const [isOvertime, setIsOvertime] = useState(false);
   const [hourStart, setHourStart] = useState('');
   const [hourEnd, setHourEnd] = useState('');
+  const [message, setMessage] = useState(''); // New state for message
+  const [selectedImages, setSelectedImages] = useState([]); // New state for selected image files
+  const [selectedProject, setSelectedProject] = useState(''); // New state for selected project
 
-  // Reset form fields when modal opens or selectedDate changes
+  // States for fetching daily work data (for the 'Hours of Work' tab)
+  const [dailyWorkData, setDailyWorkData] = useState(null);
+  const [isLoadingDailyData, setIsLoadingDailyData] = useState(false);
+  const [dailyDataError, setDailyDataError] = useState(null);
+
+  // States for fetching projects list
+  const [projectsList, setProjectsList] = useState([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+  const [projectsError, setProjectsError] = useState(null);
+
+  // Effect to reset form fields and clear fetched data when modal opens or selectedDate changes
   useEffect(() => {
     if (show) {
-      setKey('hours');
-      setEventType('Work'); // Default to Work for new selections
+      setKey('hours'); // Default to hours tab when opening
+      setEventType('Work');
       setIsOvertime(false);
       setHourStart('');
       setHourEnd('');
+      setMessage('');
+      setSelectedImages([]);
+      setSelectedProject(''); // Reset selected project
+      setDailyWorkData(null);
+      setDailyDataError(null);
+      setProjectsList([]); // Clear projects list
+      setProjectsError(null);
     }
   }, [show, selectedDate]);
 
-  // Reset overtime if eventType changes to non-Work
+  // Effect to reset overtime if eventType changes to non-Work
   useEffect(() => {
     if (eventType !== 'Work') {
       setIsOvertime(false);
+      setHourStart(''); // Also clear hours if not work
+      setHourEnd('');
     }
   }, [eventType]);
 
-  const handleSaveEvent = () => {
+  // Effect for fetching data for the 'Hours of Work' tab
+  useEffect(() => {
+    const fetchDailyData = async () => {
+      if (show && selectedDate && key === 'hours') {
+        setIsLoadingDailyData(true);
+        setDailyDataError(null);
+        try {
+          const dateString = selectedDate.toISOString().split('T')[0];
+          // Replace with your actual API endpoint for fetching daily data
+          const response = await fetch(`http://localhost:8080/api/get/evento/`+dateString+'/'+idDipendente);
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          }
+          const data = await response.json();
+          console.log("Eventi");
+          console.log(data);
+          setDailyWorkData(data);
+        } catch (err) {
+          console.error("Failed to fetch daily work data:", err);
+          setDailyDataError(`Failed to load data: ${err.message || 'Network error'}`);
+        } finally {
+          setIsLoadingDailyData(false);
+        }
+      }
+    };
+
+    fetchDailyData();
+  }, [show, selectedDate, key]);
+
+  // Effect for fetching the list of projects
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (show && key === 'form' && projectsList.length === 0) { // Fetch only when modal is open, on 'form' tab, and list is empty
+        setIsLoadingProjects(true);
+        setProjectsError(null);
+        try {
+          // Replace with your actual API endpoint for fetching projects
+          const response = await fetch('http://localhost:8080/api/progetti/utente');
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          }
+          const data = await response.json();
+          const projectsList = [];
+          for (const projectObject of data) { // 'projectObject' represents each item in the 'data' array
+              projectsList.push(projectObject.nomeProgetto); // Use projectObject.id as the key
+          }
+          setProjectsList(projectsList); // Assuming data is an array of project objects like [{id: 1, name: "Project A"}]
+          if (data.length > 0) {
+            setSelectedProject(data[0].nomeProgetto); // Select the first project by default
+          }
+        } catch (err) {
+          console.error("Failed to fetch projects:", err);
+          setProjectsError(`Failed to load projects: ${err.message || 'Network error'}`);
+        } finally {
+          setIsLoadingProjects(false);
+        }
+      }
+    };
+
+    fetchProjects();
+  }, [show, key, projectsList.length]); // Dependencies: re-run when modal shows, tab changes, or projectsList is empty
+
+  const handleImageChange = (e) => {
+    setSelectedImages(Array.from(e.target.files)); // Store File objects
+  };
+
+  const handleSaveEvent = async () => {
     // Validation check: If eventType is 'Work' and hours are not set
     if (eventType === 'Work' && (!hourStart || !hourEnd)) {
       alert('Please set both Hour Start and Hour End for Work events.');
-      return; // Stop the function execution
+      return;
+    }
+    // Validation for project selection if needed (e.g., if project is mandatory for Work events)
+    if (eventType === 'Work' && !selectedProject) {
+        alert('Please select a project for Work events.');
+        return;
     }
 
-    const eventData = {
-      date: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
-      type: eventType,
-      overtime: isOvertime,
-      hourStart: hourStart,
-      hourEnd: hourEnd,
-    };
-    console.log('Saving event:', eventData);
-    alert(`Event saved for ${selectedDate ? selectedDate.toLocaleDateString() : 'N/A'}:
-    Type: ${eventType}, Overtime: ${isOvertime}, Hours: ${hourStart}-${hourEnd}`);
-    handleClose();
+
+    // For sending files, you typically use FormData
+    const formData = new FormData();
+    formData.append('date', selectedDate ? selectedDate.toISOString().split('T')[0] : '');
+    formData.append('type', eventType);
+    formData.append('overtime', isOvertime);
+    formData.append('hourStart', hourStart);
+    formData.append('hourEnd', hourEnd);
+    formData.append('message', message); // Add message to form data
+    formData.append('projectId', selectedProject); // Add selected project ID
+    formData.append('idDipendente',idDipendente)
+
+    selectedImages.forEach((file, index) => {
+      formData.append(`images`, file); // Append each image file
+      // Or if your backend expects a simple array: formData.append('images', file);
+    });
+
+    try {
+      // Replace with your actual API endpoint for adding event (might need to handle multipart/form-data)
+      console.log(formData);
+      const response = await fetch('http://localhost:8080/api/add/event', {
+        method: 'POST',
+        // When sending FormData, DO NOT set 'Content-Type': 'application/json'
+        // The browser sets it automatically as 'multipart/form-data' with the correct boundary
+        body: formData, // Send FormData object directly
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to save event. Server responded with status: ${response.status}. Message: ${errorText}`);
+      }
+
+      const responseData = await response.json();
+      console.log('Event saved successfully:', responseData);
+      alert('Event saved successfully!');
+      handleClose();
+    } catch (error) {
+      console.error('Error saving event:', error);
+      alert(`Error saving event: ${error.message || 'Please check your network connection and try again.'}`);
+    }
   };
+  const handleDelete = async (idToDelete) => {
+      console.log(`Attempting to delete event with ID: ${idToDelete}`);
+      try {
+        // Replace with your actual API endpoint for deleting an event
+        const response = await fetch(`http://localhost:8080/api/delete/evento/${idToDelete}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to delete event. Server responded with status: ${response.status}. Message: ${errorText}`);
+        }
+
+        console.log('Event deleted successfully:', idToDelete);
+        // Update the state to remove the deleted event from the UI
+        setDailyWorkData(prevEvents => prevEvents.filter(event => event.IdEvento !== idToDelete)); // Filter dailyWorkData (the events array)
+        alert('Event deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        setDailyDataError(`Failed to delete event ${idToDelete}: ${error.message || 'Network error'}`); // Use unified error state
+        alert(`Error deleting event: ${error.message || 'Please check your network connection and try again.'}`);
+      }
+    };
 
   return (
     <Modal show={show} onHide={handleClose} centered size="lg">
@@ -64,20 +212,75 @@ const EventModal = ({ show, handleClose, selectedDate }) => {
           className="mb-3"
         >
           <Tab eventKey="hours" title="Hours of Work">
-            <h4>Daily Hours Overview</h4>
-            <p className="text-muted">
-              This section will display work hours data, holidays, permissions, and sickness for {selectedDate ? selectedDate.toLocaleDateString() : 'the selected day'}.
-              (Data to be loaded via API call)
-            </p>
-            <hr />
-            <h5>Summary (Placeholder):</h5>
-            <ul>
-              <li>Scheduled Hours: 8 hours</li>
-              <li>Worked Hours: (e.g., 7.5 hours)</li>
-              <li>Overtime: (e.g., 0.5 hours)</li>
-              <li>Leave/Absence: (e.g., 0 hours)</li>
-            </ul>
-          </Tab>
+                      {isLoadingDailyData && <p><Spinner animation="border" size="sm" /> Loading data...</p>}
+                      {dailyDataError && <p className="text-danger">{dailyDataError}</p>}
+
+                      {/* Daily Events List - Using dailyWorkData directly as it contains the array of Evento objects */}
+                      {!isLoadingDailyData && !dailyDataError && ( // Only render content when not loading and no error
+                        <>
+                          <h4>Daily Events Overview</h4> {/* Changed title for clarity */}
+                          {Array.isArray(dailyWorkData) && dailyWorkData.length > 0 ? (
+                            <div>
+                              {dailyWorkData.map((event) => (
+                                <div key={event.IdEvento ?? `event-${Math.random()}`} // Fallback key for safety
+                                     style={{
+                                       border: '1px solid #ddd',
+                                       padding: '10px',
+                                       margin: '10px 0',
+                                       borderRadius: '5px',
+                                       position: 'relative',
+                                       backgroundColor: event.approvato ? '#e6ffe6' : '#ffe6e6' // Green for approved, light red for not
+                                     }}
+                                >
+                                  {/* Delete button for each event */}
+                                  <button
+                                    onClick={() => handleDelete(event.IdEvento)}
+                                    style={{
+                                      position: 'absolute',
+                                      top: '5px',
+                                      right: '5px',
+                                      background: 'none',
+                                      border: 'none',
+                                      fontSize: '1.2em',
+                                      cursor: 'pointer',
+                                      color: 'red'
+                                    }}
+                                    title="Delete Event" // Hover tooltip
+                                  >
+                                    &times; {/* HTML entity for 'X' character */}
+                                  </button>
+
+                                  {/* Conditional rendering based on event.tipo */}
+                                  {event.tipo === 'LAVORO' ? (
+                                    <>
+                                      {/* Display full details for 'LAVORO' type */}
+                                      <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
+                                      <p><strong>Start Time:</strong> {event.oraInizio ?? 'N/A'}</p>
+                                      <p><strong>End Time:</strong> {event.oraFine ?? 'N/A'}</p>
+                                      <p><strong>Project:</strong> {event.nomeProgetto ?? 'No message provided.'}</p>
+                                      <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
+                                      <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
+                                      <p><strong>Approved:</strong> {event.approvato?.toString() ?? 'N/A'}</p>
+                                    </>
+                                  ) : (
+                                    <>
+                                      {/* Display only message for non-'LAVORO' types */}
+                                      <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
+                                      <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
+                                      <p><strong>Approved:</strong> {event.approvato?.toString() ?? 'N/A'}</p>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-muted">No events recorded for this day.</p>
+                          )}
+                        </>
+                      )}
+
+                      <hr />
+                    </Tab>
           <Tab eventKey="form" title="Add/Edit Event">
             <Form>
               <Form.Group as={Row} className="mb-3" controlId="formDate">
@@ -103,7 +306,7 @@ const EventModal = ({ show, handleClose, selectedDate }) => {
                 </Col>
               </Form.Group>
 
-              {/* Conditional rendering for Overtime checkbox and Hour inputs */}
+              {/* Conditional rendering for Overtime checkbox, Hour inputs, and Project */}
               {eventType === 'Work' && (
                 <>
                   <Form.Group as={Row} className="mb-3" controlId="formOvertime">
@@ -138,8 +341,67 @@ const EventModal = ({ show, handleClose, selectedDate }) => {
                       />
                     </Col>
                   </Form.Group>
+
+                  {/* Project Dropdown */}
+                  <Form.Group as={Row} className="mb-3" controlId="formProject">
+                    <Form.Label column sm="3">Project</Form.Label>
+                    <Col sm="9">
+                      {isLoadingProjects ? (
+                        <p><Spinner animation="border" size="sm" /> Loading projects...</p>
+                      ) : projectsError ? (
+                        <p className="text-danger">{projectsError}</p>
+                      ) : (
+                        <Form.Select
+                          value={selectedProject}
+                          onChange={(e) => setSelectedProject(e.target.value)}
+                          disabled={projectsList.length === 0}
+                        >
+                          <option value="">Select a Project</option>
+                          {projectsList.map((projectName, index) => ( // 'projectName' is the string value, 'index' is its position
+                             <option key={projectName} value={projectName}>
+                               {projectName}
+                             </option>
+                           ))}
+                        </Form.Select>
+                      )}
+                    </Col>
+                  </Form.Group>
                 </>
               )}
+
+              {/* Message Textarea (visible for all event types, if desired) */}
+              <Form.Group as={Row} className="mb-3" controlId="formMessage">
+                <Form.Label column sm="3">Message</Form.Label>
+                <Col sm="9">
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder="Add a message for this event..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                </Col>
+              </Form.Group>
+
+              {/* Image Upload Input */}
+              <Form.Group as={Row} className="mb-3" controlId="formImages">
+                <Form.Label column sm="3">Upload Images</Form.Label>
+                <Col sm="9">
+                  <Form.Control
+                    type="file"
+                    multiple // Allows selecting multiple files
+                    onChange={handleImageChange}
+                  />
+                  {selectedImages.length > 0 && (
+                    <div className="mt-2">
+                      <small className="text-muted">
+                        Selected: {selectedImages.map(file => file.name).join(', ')}
+                      </small>
+                    </div>
+                  )}
+                </Col>
+              </Form.Group>
+
             </Form>
           </Tab>
         </Tabs>
