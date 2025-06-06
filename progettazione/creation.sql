@@ -31,7 +31,7 @@ CREATE TABLE Comunicazione (
     IdComunicazione  SERIAL PRIMARY KEY,
     Tipo VARCHAR(9) NOT NULL CHECK(Tipo IN ('Progetto', 'Forum','Richiesta')),
     Testo TEXT NOT NULL,
-    IdProgetto INT NOT NULL,
+    IdProgetto INT ,
     FOREIGN KEY (IdProgetto) REFERENCES Progetto(IdProgetto) ON DELETE CASCADE
 );
 

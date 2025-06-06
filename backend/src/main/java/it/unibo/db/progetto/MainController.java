@@ -27,15 +27,16 @@ public class MainController {
   final UtenteRepository utente;
   final EventoRepository evento;
   final ProgettoRepository progetto;
+  final ComunicazioneRepository comunicazione;
 
   @GetMapping("/progetti/utente") // '{id}' indica una variabile nel percorso
   public List<Progetto> getProgettiUtenti() {
-      return utente.getProgetti();
+    return utente.getProgetti();
   }
 
   @GetMapping("/get/evento/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
   public List<EventoDisplay> getEventiDipendentne(@PathVariable String date, @PathVariable int idDipendente) {
-    return utente.getEventiDipendentne(date,idDipendente);
+    return utente.getEventiDipendentne(date, idDipendente);
   }
 
   @DeleteMapping("/delete/evento/{idToDelete}")
@@ -64,18 +65,18 @@ public class MainController {
 
   @PostMapping(value = "/add/event", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addEvent(
-          @RequestParam("date") String date,
-          @RequestParam("type") String type,
-          @RequestParam("overtime") String overtime,
-          @RequestParam("hourStart") String hourStart,
-          @RequestParam("hourEnd") String hourEnd,
-          @RequestParam("message") String message,
-          @RequestParam("projectId") String projectId,
-          @RequestParam("idDipendente") int idDipendente,
-          @RequestPart(value = "images", required = false) List<MultipartFile> images
-  ) {
+      @RequestParam("date") String date,
+      @RequestParam("type") String type,
+      @RequestParam("overtime") String overtime,
+      @RequestParam("hourStart") String hourStart,
+      @RequestParam("hourEnd") String hourEnd,
+      @RequestParam("message") String message,
+      @RequestParam("projectId") String projectId,
+      @RequestParam("idDipendente") int idDipendente,
+      @RequestPart(value = "images", required = false) List<MultipartFile> images) {
     System.out.println(images);
-    return utente.addEvent(date,type,overtime == "true" ? true : false,hourStart,hourEnd,projectId,idDipendente,message,images);
+    return utente.addEvent(date, type, overtime == "true" ? true : false, hourStart, hourEnd, projectId, idDipendente,
+        message, images);
   }
 
   @PostMapping("/employeesOfManager")
@@ -147,6 +148,13 @@ public class MainController {
   @PostMapping("/isManagerAssignedToProject")
   public ResponseEntity<String> isManagerAssignedToProject(@RequestBody Map<String, String> body) {
     return utente.isManagerAssignedToProject(body);
+  }
+
+  @PostMapping("/addComunicazioneWithImage")
+  public ResponseEntity<String> addComunicazioneWithImage(
+      @RequestParam Map<String, String> body,
+      @RequestParam("immagini") List<MultipartFile> immagini) {
+    return comunicazione.insertComunicazioneWithImages(body, immagini);
   }
 
 }
