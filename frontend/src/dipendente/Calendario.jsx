@@ -4,7 +4,7 @@ import { Container, Row, Col, Button } from 'react-bootstrap';
 import EventModal from './EventModal';
 import './Calendario.css';
 
-const Calendar = () => {
+const Calendar = ({dipendente}) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date()); // State for the month being displayed
@@ -124,6 +124,7 @@ const Calendar = () => {
         show={showModal}
         handleClose={handleCloseModal}
         selectedDate={selectedDate}
+        idDipendente={dipendente.idUtente}
       />
 
       {/* Basic styling for calendar cells, add to your App.css or index.css */}
