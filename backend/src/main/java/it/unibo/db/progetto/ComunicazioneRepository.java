@@ -3,6 +3,7 @@ package it.unibo.db.progetto;
 import java.sql.PreparedStatement;
 
 import java.sql.Statement;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 @Repository
@@ -51,9 +52,13 @@ public class ComunicazioneRepository {
 
             Integer idComunicazione = (Integer) keyHolder.getKeys().get("idcomunicazione");
 
-            for (MultipartFile img : immagini) {
-                jdbc.update("INSERT INTO Immagine (Immagini, IdComunicazione) VALUES (?, ?)",
-                        img.getBytes(), idComunicazione);
+            if (immagini != null && !immagini.isEmpty()) {
+                for (MultipartFile img : immagini) {
+                    if (img.getSize() > 0) {
+                        jdbc.update("INSERT INTO Immagine (Immagini, IdComunicazione) VALUES (?, ?)",
+                                img.getBytes(), idComunicazione);
+                    }
+                }
             }
 
             return ResponseEntity.ok("Comunicazione e immagini inserite con successo");
@@ -65,4 +70,49 @@ public class ComunicazioneRepository {
         }
     }
 
+    public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(Map<String, Integer> body) {
+
+        Integer idProgetto = body.get("idProgetto");
+
+        List<Comunicazione> comunicazioni = jdbc.query(
+                "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdProgetto = ? ORDER BY IdComunicazione ASC",
+                comunicazioneRowMapper,
+                idProgetto);
+
+        return ResponseEntity.ok(comunicazioni);
+
+    }
+
+    public ResponseEntity<List<String>> immaginiByComunicazione(@RequestBody Map<String, Integer> body) {
+        Integer idComunicazione = body.get("idComunicazione");
+        if (idComunicazione == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<byte[]> immaginiBytes = jdbc.query(
+                "SELECT Immagini FROM Immagine Im JOIN Comunicazione Co ON Im.IdComunicazione = Co.IdComunicazione WHERE Co.IdComunicazione = ?",
+                (rs, rowNum) -> rs.getBytes("Immagini"),
+                idComunicazione);
+
+        List<String> immaginiBase64 = immaginiBytes.stream()
+                .map(bytes -> "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes))
+                .toList();
+
+        return ResponseEntity.ok(immaginiBase64);
+    }
+
+    public ResponseEntity<Integer> countVisuals(@RequestBody Map<String, Integer> body) {
+
+        Integer idComunicazione = body.get("idComunicazione");
+        System.out.println("com: " + idComunicazione);
+
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(DISTINCT IdUtente) FROM Visualizzare WHERE IdComunicazione = ?",
+                Integer.class,
+                idComunicazione);
+
+        System.out.println("visual: " + count);
+
+        return ResponseEntity.ok(count != null ? count : 0);
+    }
 }
