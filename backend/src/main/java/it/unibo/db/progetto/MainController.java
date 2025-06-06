@@ -30,14 +30,30 @@ public class MainController {
       return utente.getProgetti();
   }
 
+  @GetMapping("get/valuta") // '{id}' indica una variabile nel percorso
+  public List<Valuta> getAllValute() {
+    return utente.getAllValute();
+  }
+
   @GetMapping("/get/evento/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
-  public List<EventoDisplay> getEventiDipendentne(@PathVariable String date, @PathVariable int idDipendente) {
+  public List<EventoDisplay> getEventiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getEventiDipendentne(date,idDipendente);
+  }
+
+  @GetMapping("/get/rimborsi/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
+  public List<RimborsoSpeseDisplay> getRimborsiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
+    return utente.getRimborsiDipendente(date,idDipendente);
   }
 
   @DeleteMapping("/delete/evento/{idToDelete}")
   public ResponseEntity<Boolean> deleteEvento(@PathVariable int idToDelete) {
     boolean result = utente.deleteEvento(idToDelete);
+    return ResponseEntity.ok(result);
+  }
+
+  @DeleteMapping("/delete/rimborso/{idToDelete}")
+  public ResponseEntity<Boolean> deleteRimborso(@PathVariable String idToDelete) {
+    boolean result = utente.deleteRimborso(idToDelete);
     return ResponseEntity.ok(result);
   }
 
@@ -71,8 +87,19 @@ public class MainController {
           @RequestParam("idDipendente") int idDipendente,
           @RequestPart(value = "images", required = false) List<MultipartFile> images
   ) {
-    System.out.println(images);
     return utente.addEvent(date,type,overtime == "true" ? true : false,hourStart,hourEnd,projectId,idDipendente,message,images);
+  }
+
+  @PostMapping(value = "/add/rimborso", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Boolean> addRimborso(
+          @RequestParam("date") String date,
+          @RequestParam("import") double importo,
+          @RequestParam("message") String message,
+          @RequestParam("idDipendente") int idDipendente,
+          @RequestParam("idValuta") String idValuta,
+          @RequestPart(value = "images", required = false) List<MultipartFile> images
+  ) {
+    return utente.addRimborso(date,importo,message,idDipendente,idValuta,images);
   }
 
   @PostMapping("/employeesOfManager")
