@@ -51,6 +51,21 @@ public class UtenteRepository {
             rs.getDate("deadline").toLocalDate()
     );
 
+    private final RowMapper<Valuta> valutaRowMapper = (rs, rowNum) -> new Valuta(
+            rs.getInt("idValuta"),
+            rs.getInt("idAmministratore"),
+            rs.getString("nome"),
+            rs.getString("simbolo")
+    );
+
+    private final RowMapper<RimborsoSpeseDisplay> rimborsoSpeseRowMapper = (rs, rowNum) -> new RimborsoSpeseDisplay(
+            rs.getInt("idRimborso"),
+            rs.getBoolean("approvato"),
+            rs.getDouble("importo"),
+            rs.getString("testo"),
+            rs.getString("nome")
+    );
+
     private final RowMapper<Evento> eventoRowMapper = (rs, rowNum) -> new Evento(
             rs.getInt("IdEvento"),
             rs.getBoolean("Approvato"),
@@ -78,6 +93,10 @@ public class UtenteRepository {
 
     public List<Utente> findAll() {
         return jdbc.query("SELECT * FROM Utente", utenteRowMapper);
+    }
+
+    public List<Valuta> getAllValute() {
+        return jdbc.query("SELECT * FROM Valuta", valutaRowMapper);
     }
 
     public List<Utente> findAllEmployees() {
@@ -263,30 +282,8 @@ public class UtenteRepository {
             return ResponseEntity.badRequest().body(false);
         }
         int idProgetto = temp.getFirst().idProgetto();
-        String addMessageQuery = "INSERT INTO  Comunicazione (Tipo, Testo, IdProgetto) VALUES (?,?,?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[]{"idcomunicazione"});
-            ps.setString(1, "Richiesta");
-            ps.setString(2, message);
-            ps.setInt(3, idProgetto);
-            return ps;
-        }, keyHolder);
-        int generatedComunicazioneId = Objects.requireNonNull(keyHolder.getKey()).intValue();
-
-        if (images != null && !images.isEmpty()) {
-            String insertImageQuery = "INSERT INTO Immagine (Immagini, IdComunicazione) VALUES (?, ?)";
-            for (MultipartFile image : images) {
-                try {
-                    byte[] imageData = image.getBytes();
-                    jdbc.update(insertImageQuery, imageData, generatedComunicazioneId);
-                } catch (Exception e) {
-                    System.err.println("Error inserting image : " + e.getMessage());
-                }
-            }
-        } else {
-            System.out.println("No images provided for insertion.");
-        }
+        int generatedComunicazioneId = insertMessage("Richiesta",message,idProgetto);
+        insertImmages(images,generatedComunicazioneId);
 
         String addEventoQuery = "INSERT INTO Evento (\n" +
                 "    Approvato,\n" +
@@ -319,6 +316,33 @@ public class UtenteRepository {
         return ResponseEntity.ok(true);
     }
 
+    public ResponseEntity<Boolean> addRimborso(
+            String date,
+            double importo,
+            String message,
+            int idDipendente,
+            String idValuta,
+            List<MultipartFile> images
+    ) {
+        int generatedComunicazioneId = insertMessage("Richiesta",message);
+        insertImmages(images,generatedComunicazioneId);
+        jdbc.update("INSERT INTO RimborsoSpese ("+
+                "Approvato,"+
+                "Data,"+
+                "Importo,"+
+                "IdComunicazione,"+
+                "IdUtente,"+
+                "IdValuta)"+
+                " VALUES (?,?,?,?,?,?)",
+                false,
+                Date.valueOf(date),
+                importo,
+                generatedComunicazioneId,
+                idDipendente,
+                Integer.parseInt(idValuta));
+        return ResponseEntity.ok(true);
+    }
+
     public List<Progetto> getProgetti() {
         return jdbc.query("SELECT * FROM PROGETTO AS p WHERE (\n" +
                 "\tp.idProgetto IN (SELECT idProgetto FROM Attribuire AS a WHERE a.idProgetto = p.idProgetto)\n" +
@@ -345,9 +369,36 @@ public class UtenteRepository {
         return eventi;
     }
 
+    public List<RimborsoSpeseDisplay> getRimborsiDipendente(String date,int idDipendente) {
+        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome " +
+                "FROM RIMBORSOSPESE AS R,  " +
+                "COMUNICAZIONE AS C, " +
+                "VALUTA AS V "+
+                "WHERE Data = ? " +
+                "AND idUtente = ? " +
+                "AND R.idComunicazione = C.idComunicazione "+
+                "AND R.idValuta = V.idValuta";
+        List<RimborsoSpeseDisplay> eventi = jdbc.query(
+                selectEventoQuery,
+                rimborsoSpeseRowMapper,
+                Date.valueOf(date),     // This is already a java.sql.Date
+                idDipendente            // This is already an int
+        );
+
+        return eventi;
+    }
+
     public boolean deleteEvento(int eventoId){
         try {
             jdbc.update("DELETE FROM EVENTO WHERE IdEvento = " + eventoId);
+            return true;
+        } catch (java.lang.Exception e) {
+            return false;
+        }
+    }
+    public boolean deleteRimborso(String rimborsoId){
+        try {
+            jdbc.update("DELETE FROM RIMBORSOSPESE WHERE IdRimborso = " + rimborsoId);
             return true;
         } catch (java.lang.Exception e) {
             return false;
@@ -366,5 +417,45 @@ public class UtenteRepository {
             case "Sickness" -> "Malattia";
             default -> "Lavoro";
         };
+    }
+
+    private int insertMessage(String tipo, String message, int idProgetto){
+        String addMessageQuery = "INSERT INTO  Comunicazione (Tipo, Testo, IdProgetto) VALUES (?,?,?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[]{"idcomunicazione"});
+            ps.setString(1, tipo);
+            ps.setString(2, message);
+            ps.setInt(3, idProgetto);
+            return ps;
+        }, keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
+    }
+    private int insertMessage(String tipo, String message){
+        String addMessageQuery = "INSERT INTO  Comunicazione (Tipo, Testo) VALUES (?,?)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[]{"idcomunicazione"});
+            ps.setString(1, tipo);
+            ps.setString(2, message);
+            return ps;
+        }, keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
+    }
+
+    private void insertImmages(List<MultipartFile> images, int IdComunicazione){
+        if (images != null && !images.isEmpty()) {
+            String insertImageQuery = "INSERT INTO Immagine (Immagini, IdComunicazione) VALUES (?, ?)";
+            for (MultipartFile image : images) {
+                try {
+                    byte[] imageData = image.getBytes();
+                    jdbc.update(insertImageQuery, imageData, IdComunicazione);
+                } catch (Exception e) {
+                    System.err.println("Error inserting image : " + e.getMessage());
+                }
+            }
+        } else {
+            System.out.println("No images provided for insertion.");
+        }
     }
 }
