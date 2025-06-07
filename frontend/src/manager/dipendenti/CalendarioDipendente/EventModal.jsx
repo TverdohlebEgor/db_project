@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstrap'; // Added Spinner
 
 const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
+  console.log(idDipendente);
   const [key, setKey] = useState('hours');
   const [eventType, setEventType] = useState('Work');
   const [isOvertime, setIsOvertime] = useState(false);
@@ -49,26 +50,52 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
   }, [eventType]);
 
-  // Effect for fetching data for the 'Hours of Work' tab
+
+  const handleApproval = async (eventId, approve) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/updateApprovazione`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          idEvento: eventId,
+          approvato: approve
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Errore approvazione: ${response.status}. Messaggio: ${errorText}`);
+      }
+
+      setDailyWorkData(prev =>
+        prev.map(ev =>
+          ev.IdEvento === eventId ? { ...ev, approvato: approve } : ev
+        )
+      );
+    } catch (error) {
+      console.error('Errore durante approvazione evento:', error);
+      alert(`Errore: ${error.message}`);
+    }
+  };
+
+
   useEffect(() => {
     const fetchDailyData = async () => {
       if (show && selectedDate && key === 'hours') {
         setIsLoadingDailyData(true);
         setDailyDataError(null);
         try {
-          const dateString = selectedDate.toISOString().split('T')[0];
-          // Replace with your actual API endpoint for fetching daily data
-          const response = await fetch(`http://localhost:8080/api/get/evento/`+dateString+'/'+idDipendente);
+          const dateString = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
+          const response = await fetch(`http://localhost:8080/api/get/evento/${dateString}/${idDipendente}`);
           if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
           }
           const data = await response.json();
-          console.log("Eventi");
-          console.log(data);
           setDailyWorkData(data);
         } catch (err) {
-          console.error("Failed to fetch daily work data:", err);
           setDailyDataError(`Failed to load data: ${err.message || 'Network error'}`);
         } finally {
           setIsLoadingDailyData(false);
@@ -95,7 +122,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
           const data = await response.json();
           const projectsList = [];
           for (const projectObject of data) { // 'projectObject' represents each item in the 'data' array
-              projectsList.push(projectObject.nomeProgetto); // Use projectObject.id as the key
+            projectsList.push(projectObject.nomeProgetto); // Use projectObject.id as the key
           }
           setProjectsList(projectsList); // Assuming data is an array of project objects like [{id: 1, name: "Project A"}]
           if (data.length > 0) {
@@ -125,21 +152,22 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
     // Validation for project selection if needed (e.g., if project is mandatory for Work events)
     if (eventType === 'Work' && !selectedProject) {
-        alert('Please select a project for Work events.');
-        return;
+      alert('Please select a project for Work events.');
+      return;
     }
 
 
     // For sending files, you typically use FormData
     const formData = new FormData();
-    formData.append('date', selectedDate ? selectedDate.toISOString().split('T')[0] : '');
-    formData.append('type', eventType);
+    const localDate = selectedDate ? `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}` : '';
+    formData.append('date', localDate);
+
     formData.append('overtime', isOvertime);
     formData.append('hourStart', hourStart);
     formData.append('hourEnd', hourEnd);
     formData.append('message', message); // Add message to form data
     formData.append('projectId', selectedProject); // Add selected project ID
-    formData.append('idDipendente',idDipendente)
+    formData.append('idDipendente', idDipendente)
 
     selectedImages.forEach((file, index) => {
       formData.append(`images`, file); // Append each image file
@@ -148,6 +176,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
     try {
       // Replace with your actual API endpoint for adding event (might need to handle multipart/form-data)
+      console.log(formData);
       const response = await fetch('http://localhost:8080/api/add/event', {
         method: 'POST',
         // When sending FormData, DO NOT set 'Content-Type': 'application/json'
@@ -161,6 +190,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
       }
 
       const responseData = await response.json();
+      console.log('Event saved successfully:', responseData);
       alert('Event saved successfully!');
       handleClose();
     } catch (error) {
@@ -169,26 +199,28 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
   };
   const handleDelete = async (idToDelete) => {
-      try {
-        // Replace with your actual API endpoint for deleting an event
-        const response = await fetch(`http://localhost:8080/api/delete/evento/${idToDelete}`, {
-          method: 'DELETE',
-        });
+    console.log(`Attempting to delete event with ID: ${idToDelete}`);
+    try {
+      // Replace with your actual API endpoint for deleting an event
+      const response = await fetch(`http://localhost:8080/api/delete/evento/${idToDelete}`, {
+        method: 'DELETE',
+      });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to delete event. Server responded with status: ${response.status}. Message: ${errorText}`);
-        }
-
-        // Update the state to remove the deleted event from the UI
-        setDailyWorkData(prevEvents => prevEvents.filter(event => event.IdEvento !== idToDelete)); // Filter dailyWorkData (the events array)
-        alert('Event deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting event:', error);
-        setDailyDataError(`Failed to delete event ${idToDelete}: ${error.message || 'Network error'}`); // Use unified error state
-        alert(`Error deleting event: ${error.message || 'Please check your network connection and try again.'}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete event. Server responded with status: ${response.status}. Message: ${errorText}`);
       }
-    };
+
+      console.log('Event deleted successfully:', idToDelete);
+      // Update the state to remove the deleted event from the UI
+      setDailyWorkData(prevEvents => prevEvents.filter(event => event.IdEvento !== idToDelete)); // Filter dailyWorkData (the events array)
+      alert('Event deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      setDailyDataError(`Failed to delete event ${idToDelete}: ${error.message || 'Network error'}`); // Use unified error state
+      alert(`Error deleting event: ${error.message || 'Please check your network connection and try again.'}`);
+    }
+  };
 
   return (
     <Modal show={show} onHide={handleClose} centered size="lg">
@@ -207,75 +239,121 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
           className="mb-3"
         >
           <Tab eventKey="hours" title="Hours of Work">
-                      {isLoadingDailyData && <p><Spinner animation="border" size="sm" /> Loading data...</p>}
-                      {dailyDataError && <p className="text-danger">{dailyDataError}</p>}
+            {isLoadingDailyData && <p><Spinner animation="border" size="sm" /> Loading data...</p>}
+            {dailyDataError && <p className="text-danger">{dailyDataError}</p>}
 
-                      {/* Daily Events List - Using dailyWorkData directly as it contains the array of Evento objects */}
-                      {!isLoadingDailyData && !dailyDataError && ( // Only render content when not loading and no error
-                        <>
-                          <h4>Daily Events Overview</h4> {/* Changed title for clarity */}
-                          {Array.isArray(dailyWorkData) && dailyWorkData.length > 0 ? (
-                            <div>
-                              {dailyWorkData.map((event) => (
-                                <div key={event.IdEvento ?? `event-${Math.random()}`} // Fallback key for safety
-                                     style={{
-                                       border: '1px solid #ddd',
-                                       padding: '10px',
-                                       margin: '10px 0',
-                                       borderRadius: '5px',
-                                       position: 'relative',
-                                       backgroundColor: event.approvato ? '#e6ffe6' : '#ffe6e6' // Green for approved, light red for not
-                                     }}
-                                >
-                                  {/* Delete button for each event */}
-                                  <button
-                                    onClick={() => handleDelete(event.IdEvento)}
-                                    style={{
-                                      position: 'absolute',
-                                      top: '5px',
-                                      right: '5px',
-                                      background: 'none',
-                                      border: 'none',
-                                      fontSize: '1.2em',
-                                      cursor: 'pointer',
-                                      color: 'red'
-                                    }}
-                                    title="Delete Event" // Hover tooltip
-                                  >
-                                    &times; {/* HTML entity for 'X' character */}
-                                  </button>
+            {/* Daily Events List - Using dailyWorkData directly as it contains the array of Evento objects */}
+            {!isLoadingDailyData && !dailyDataError && ( // Only render content when not loading and no error
+              <>
+                <h4>Daily Events Overview</h4> {/* Changed title for clarity */}
+                {Array.isArray(dailyWorkData) && dailyWorkData.length > 0 ? (
+                  <div>
+                    {dailyWorkData.map((event) => (
+                      <div key={event.IdEvento ?? `event-${Math.random()}`} // Fallback key for safety
+                        style={{
+                          border: '1px solid #ddd',
+                          padding: '10px',
+                          margin: '10px 0',
+                          borderRadius: '5px',
+                          position: 'relative',
+                          backgroundColor: event.approvato === null ? 'transparent' : (event.approvato ? '#e6ffe6' : '#ffe6e6')
+                        }}
+                      >
+                        {/* Delete button for each event */}
+                        <button
+                          onClick={() => handleDelete(event.IdEvento)}
+                          style={{
+                            position: 'absolute',
+                            top: '5px',
+                            right: '5px',
+                            background: 'none',
+                            border: 'none',
+                            fontSize: '1.2em',
+                            cursor: 'pointer',
+                            color: 'red'
+                          }}
+                          title="Delete Event" // Hover tooltip
+                        >
+                          &times; 
+                        </button>
 
-                                  {/* Conditional rendering based on event.tipo */}
-                                  {event.tipo === 'LAVORO' ? (
-                                    <>
-                                      {/* Display full details for 'LAVORO' type */}
-                                      <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
-                                      <p><strong>Start Time:</strong> {event.oraInizio ?? 'N/A'}</p>
-                                      <p><strong>End Time:</strong> {event.oraFine ?? 'N/A'}</p>
-                                      <p><strong>Project:</strong> {event.nomeProgetto ?? 'No message provided.'}</p>
-                                      <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
-                                      <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
-                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
-                                    </>
-                                  ) : (
-                                    <>
-                                      {/* Display only message for non-'LAVORO' types */}
-                                      <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
-                                      <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
-                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
-                                    </>
-                                  )}
-                                </div>
-                              ))}
+                        {/* Conditional rendering based on event.tipo */}
+                        {event.tipo === 'LAVORO' ? (
+                          <>
+                            {/* Display full details for 'LAVORO' type */}
+                            <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
+                            <p><strong>Start Time:</strong> {event.oraInizio ?? 'N/A'}</p>
+                            <p><strong>End Time:</strong> {event.oraFine ?? 'N/A'}</p>
+                            <p><strong>Project:</strong> {event.nomeProgetto ?? 'No message provided.'}</p>
+                            <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
+                            <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
+                            <p><strong>Approved:</strong> {
+                              event.approvato === null || event.approvato === undefined
+                                ? 'Pending'
+                                : event.approvato === true
+                                  ? 'Yes'
+                                  : 'No'
+                            }</p>                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleApproval(event.IdEvento, true)}
+                                disabled={false}
+                              >
+                                Approva
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleApproval(event.IdEvento, false)}
+                                disabled={false}
+                              >
+                                Rifiuta
+                              </Button>
                             </div>
-                          ) : (
-                            <p className="text-muted">No events recorded for this day.</p>
-                          )}
-                        </>
-                      )}
+                          </>
+                        ) : (
+                          <>
+                            {/* Display only message for non-'LAVORO' types */}
+                            <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
+                            <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
+                            <p><strong>Approved:</strong> {
+                              event.approvato === null || event.approvato === undefined
+                                ? 'Pending'
+                                : event.approvato === true
+                                  ? 'Yes'
+                                  : 'No'
+                            }</p>                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleApproval(event.IdEvento, true)}
+                                disabled={false}
+                              >
+                                Approva
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleApproval(event.IdEvento, false)}
+                                disabled={false}
+                              >
+                                Rifiuta
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No events recorded for this day.</p>
+                )}
+              </>
+            )}
 
-                      <hr />
-                    </Tab>
+            <hr />
+          </Tab>
           <Tab eventKey="form" title="Add/Edit Event">
             <Form>
               <Form.Group as={Row} className="mb-3" controlId="formDate">
@@ -353,10 +431,10 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                         >
                           <option value="">Select a Project</option>
                           {projectsList.map((projectName, index) => ( // 'projectName' is the string value, 'index' is its position
-                             <option key={projectName} value={projectName}>
-                               {projectName}
-                             </option>
-                           ))}
+                            <option key={projectName} value={projectName}>
+                              {projectName}
+                            </option>
+                          ))}
                         </Form.Select>
                       )}
                     </Col>

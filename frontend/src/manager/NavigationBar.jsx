@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 function NavigationBar() {
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
+    <Navbar bg="dark" variant="dark" expand="lg" sticky="top" >
       <Container>
         <Navbar.Toggle aria-controls="navbar-nav" />
         <Navbar.Collapse id="navbar-nav">
@@ -11,6 +11,8 @@ function NavigationBar() {
             <Nav.Link as={Link} to="/">Dipendenti</Nav.Link>
             <Nav.Link as={Link} to="/progetti">Progetti</Nav.Link>
             <Nav.Link as={Link} to="/forum">Forum</Nav.Link>
+            <Nav.Link as={Link} to="/rimborsi">Rimborsi</Nav.Link>
+
           </Nav>
         </Navbar.Collapse>
       </Container>

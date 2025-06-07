@@ -20,7 +20,7 @@ VALUES (?, ?);
 ---Per ogni immagine nella comunicazione va inserita con l'IdComunicazione relativo
 
 
-INSERT INTO Affarente (IdManager,IdDipedente)
+INSERT INTO Afferente (IdManager,IdDipedente)
 VALUES (?,?)
 
 -- Approvazione rimborso

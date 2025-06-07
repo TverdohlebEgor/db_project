@@ -134,14 +134,11 @@ public class ComunicazioneRepository {
     public ResponseEntity<Integer> countVisuals(@RequestBody Map<String, Integer> body) {
 
         Integer idComunicazione = body.get("idComunicazione");
-        System.out.println("com: " + idComunicazione);
 
         Integer count = jdbc.queryForObject(
                 "SELECT COUNT(DISTINCT IdUtente) FROM Visualizzare WHERE IdComunicazione = ?",
                 Integer.class,
                 idComunicazione);
-
-        System.out.println("visual: " + count);
 
         return ResponseEntity.ok(count != null ? count : 0);
     }

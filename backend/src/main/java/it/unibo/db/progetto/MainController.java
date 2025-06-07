@@ -25,7 +25,11 @@ import java.util.HashMap;
 public class MainController {
 
   final UtenteRepository utente;
+  final EventoRepository evento;
+  final ProgettoRepository progetto;
   final ComunicazioneRepository comunicazione;
+  final RimborsoSpeseRepository rimborsoSpese;
+  final ValutaRepository valuta;
 
   @GetMapping("/progetti/utente") // '{id}' indica una variabile nel percorso
   public List<Progetto> getProgettiUtenti() {
@@ -123,6 +127,135 @@ public class MainController {
   public ResponseEntity<List<Utente>> getEmployeesOfManager(@RequestBody Map<String, String> body) {
 
     return utente.findEmployeesOfManager(body);
+
   }
 
+  @PostMapping("/addEmployeeToManager")
+  public ResponseEntity<String> addEmployeeToManager(@RequestBody Map<String, String> body) {
+
+    return utente.addEmployeeToManager(body);
+  }
+
+  @PostMapping("/removeEmployeeFromManager")
+  public ResponseEntity<String> removeEmployeeFromManager(@RequestBody Map<String, String> body) {
+
+    return utente.removeEmployeeFromManager(body);
+  }
+
+  @PostMapping("/getEventPerDay")
+  public ResponseEntity<List<Evento>> getEventPerDay(@RequestBody Map<String, String> body) {
+
+    return evento.getEventPerDay(body);
+  }
+
+  @PostMapping("/getProjectsPerManager")
+  public ResponseEntity<List<Progetto>> getProjectsPerManager(@RequestBody Map<String, String> body) {
+
+    return progetto.getProjectsPerManager(body);
+  }
+
+  @PostMapping("/isUserAssignedToProject")
+  public ResponseEntity<String> isUserAssigned(@RequestBody Map<String, String> body) {
+    return utente.isUserAssignedToProject(body);
+  }
+
+  @PostMapping("/addUserToProject")
+  public ResponseEntity<String> addUserToProject(@RequestBody Map<String, String> body) {
+    return utente.addUserToProject(body);
+  }
+
+  @PostMapping("/removeUserFromProject")
+  public ResponseEntity<String> removeUserFromProject(@RequestBody Map<String, String> body) {
+    return utente.removeUserFromProject(body);
+  }
+
+  @PostMapping("/addProject")
+  public ResponseEntity<String> addProject(@RequestBody Map<String, String> body) {
+    return progetto.addProject(body);
+  }
+
+  @GetMapping("/getAllManagers")
+  public List<Utente> getAllManagers() {
+    return utente.findAllManagers();
+  }
+
+  @PostMapping("/addManagerToProject")
+  public ResponseEntity<String> addManagerToProject(@RequestBody Map<String, String> body) {
+    return utente.addManagerToProject(body);
+  }
+
+  @PostMapping("/removeManagerFromProject")
+  public ResponseEntity<String> removeManagerFromProject(@RequestBody Map<String, String> body) {
+    return utente.removeManagerFromProject(body);
+  }
+
+  @PostMapping("/isManagerAssignedToProject")
+  public ResponseEntity<String> isManagerAssignedToProject(@RequestBody Map<String, String> body) {
+    return utente.isManagerAssignedToProject(body);
+  }
+
+  @PostMapping("/addComunicazioneWithImage")
+  public ResponseEntity<String> addComunicazioneWithImage(
+      @RequestParam Map<String, String> body,
+      @RequestParam(value = "immagini", required = false) List<MultipartFile> immagini) {
+    return comunicazione.insertComunicazioneWithImages(body, immagini);
+  }
+
+  @PostMapping("/findComunicazioniByIdProgetto")
+  public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(@RequestBody Map<String, String> body) {
+
+    return comunicazione.findComunicazioniByIdProgetto(body);
+  }
+
+  @PostMapping("/immaginiByComunicazione")
+  public ResponseEntity<List<String>> immaginiByComunicazione(@RequestBody Map<String, Integer> body) {
+    return comunicazione.immaginiByComunicazione(body);
+
+  }
+
+  @PostMapping("/countVisuals")
+  public ResponseEntity<Integer> countVisuals(@RequestBody Map<String, Integer> body) {
+
+    return comunicazione.countVisuals(body);
+
+  }
+
+  @PostMapping("/progettoDelete")
+  public ResponseEntity<Void> deleteProgetto(@RequestBody Map<String, Integer> body) {
+    return progetto.deleteProgetto(body);
+  }
+
+  @PostMapping("/progettoToggleConcluso")
+  public ResponseEntity<Void> toggleConcluso(@RequestBody Map<String, Object> body) {
+    return progetto.toggleConcluso(body);
+
+  }
+
+  @PostMapping("/rimborsiByManager")
+  public ResponseEntity<List<RimborsoSpese>> getRimborsiByManager(@RequestBody Map<String, String> body) {
+    return rimborsoSpese.getRimborsiByManager(body);
+  }
+
+  @PostMapping("/findComunicazioniById")
+  public ResponseEntity<List<Comunicazione>> findComunicazioniById(@RequestBody Map<String, Integer> body) {
+
+    return comunicazione.findComunicazioniById(body);
+  }
+
+  @PostMapping("/valutaById")
+  public ResponseEntity<Valuta> getValutaById(@RequestBody Map<String, String> body) {
+
+    return valuta.getValutaById(body);
+  }
+
+  @PostMapping("/gestisciRimborso")
+  public ResponseEntity<String> gestisciRimborso(@RequestBody Map<String, String> body) {
+
+    return rimborsoSpese.gestisciRimborso(body);
+  }
+
+  @PostMapping("/updateApprovazione")
+  public ResponseEntity<?> updateApprovazione(@RequestBody Map<String, String> body) {
+    return evento.updateApprovazione(body);
+  }
 }
