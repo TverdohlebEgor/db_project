@@ -21,7 +21,7 @@ public class RimborsoSpeseRepository {
 
     private final RowMapper<RimborsoSpese> rimborsoRowMapper = (rs, rowNum) -> new RimborsoSpese(
             rs.getInt("IdRimborso"),
-            rs.getObject("Approvato", Boolean.class), // qui prendi direttamente il Boolean (può essere null)
+            rs.getObject("Approvato", Boolean.class), 
             rs.getDate("Data").toLocalDate(),
             rs.getDouble("Importo"),
             rs.getInt("IdComunicazione"),

@@ -236,4 +236,9 @@ public class MainController {
 
     return rimborsoSpese.gestisciRimborso(body);
   }
+
+  @PostMapping("/updateApprovazione")
+  public ResponseEntity<?> updateApprovazione(@RequestBody Map<String, String> body) {
+    return evento.updateApprovazione(body);
+  }
 }

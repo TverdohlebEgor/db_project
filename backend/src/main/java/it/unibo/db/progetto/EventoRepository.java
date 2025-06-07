@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Repository
 public class EventoRepository {
@@ -51,6 +53,28 @@ public class EventoRepository {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @PostMapping("/updateApprovazione")
+    public ResponseEntity<?> updateApprovazione(@RequestBody Map<String, String> body) {
+        try {
+            int idEvento = Integer.parseInt(body.get("idEvento"));
+            boolean approvato = Boolean.parseBoolean(body.get("approvato"));
+
+            String sql = "UPDATE Evento SET Approvato = ? WHERE IdEvento = ?";
+
+            int updatedRows = jdbc.update(sql, approvato, idEvento);
+
+            if (updatedRows > 0) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Evento non trovato");
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Errore nell'aggiornamento: " + e.getMessage());
         }
     }
 }
