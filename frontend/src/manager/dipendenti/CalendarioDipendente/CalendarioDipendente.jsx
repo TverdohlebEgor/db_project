@@ -1,10 +1,13 @@
-// Calendar.jsx
+import { useLocation } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import EventModal from './EventModal';
 import './Calendario.css';
 
 const Calendar = ({dipendente}) => {
+
+
+
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date()); // State for the month being displayed
@@ -22,6 +25,7 @@ const Calendar = ({dipendente}) => {
     setSelectedDate(new Date(currentYear, currentMonth, day));
     setShowModal(true);
   };
+
   
 
   const handleCloseModal = () => {
@@ -133,4 +137,12 @@ const Calendar = ({dipendente}) => {
   );
 };
 
-export default Calendar;
+
+function CalendarioDipendente() {
+  const location = useLocation();
+  const utente = location.state?.utente;  
+  return <Calendar dipendente={utente} />
+
+}
+
+export default CalendarioDipendente;

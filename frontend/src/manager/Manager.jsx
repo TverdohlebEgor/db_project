@@ -7,6 +7,7 @@ import ProgettoInfo from './progetti/ProgettoInfo';
 import GestioneMembriProgetto from './progetti/GestioneMembriProgetto';
 import GestioneMembriManager from './progetti/GestioneMembriManager';
 import GestioneRimborsi from './rimborsi/GestioneRimborsi';
+import CalendarioDipendente from './dipendenti/CalendarioDipendente/CalendarioDipendente';
 
 
 function Manager({ manager }) {
@@ -23,6 +24,8 @@ function Manager({ manager }) {
                 <Route path="/progetto/:id/gestione" element={<GestioneMembriProgetto />} />
                 <Route path="/progetto/:id/gestione" element={<GestioneMembriProgetto />} />
                 <Route path="/progetto/:id/gestionemanager" element={<GestioneMembriManager />} />
+                <Route path="/calendarioDipendente" element={<CalendarioDipendente />} />
+
 
 
 
