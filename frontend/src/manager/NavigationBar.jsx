@@ -11,6 +11,8 @@ function NavigationBar() {
             <Nav.Link as={Link} to="/">Dipendenti</Nav.Link>
             <Nav.Link as={Link} to="/progetti">Progetti</Nav.Link>
             <Nav.Link as={Link} to="/forum">Forum</Nav.Link>
+            <Nav.Link as={Link} to="/rimborsi">Rimborsi</Nav.Link>
+
           </Nav>
         </Navbar.Collapse>
       </Container>

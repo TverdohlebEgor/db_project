@@ -4,7 +4,7 @@ import ListaComunicazioni from './comunicazioni/ListaComunicazioni';
 function ChatProgetto({ progetto }) {
     const [testo, setTesto] = useState('');
     const [immagini, setImmagini] = useState([]);
-    const [reload, setReload] = useState(false); // stato per forzare reload
+    const [reload, setReload] = useState(false); 
 
     const handleFileChange = (e) => {
         const files = e.target.files;
@@ -78,7 +78,7 @@ function ChatProgetto({ progetto }) {
                 <button type="submit" className="btn btn-primary w-100">Invia</button>
             </form>
 
-            <ListaComunicazioni idProgetto={progetto.idProgetto} reload={reload} />
+            <ListaComunicazioni progetto={progetto} reload={reload} />
 
         </div>
     );

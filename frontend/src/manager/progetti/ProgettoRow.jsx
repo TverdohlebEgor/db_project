@@ -18,7 +18,7 @@ function ProgettoRow({ progetto, manager }) {
     return (
 
         <div className="user-card" style={{ margin: "10px", padding: "10px" }}>
-            <Button onClick={projectLandingPage} Button variant="outline-primary">{progetto.nomeProgetto + " | Deadline: " + progetto.deadline + " | Stato: " + (progetto.finito ? "Finito" : "In corso")}</Button>
+            <Button onClick={projectLandingPage} Button variant="outline-primary">{progetto.nomeProgetto + " | Deadline: " + progetto.deadline + " | Stato: " + (progetto.concluso ? "Finito" : "In corso")}</Button>
 
 
         </div>);

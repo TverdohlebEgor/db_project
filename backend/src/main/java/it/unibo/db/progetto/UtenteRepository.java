@@ -1,6 +1,5 @@
 package it.unibo.db.progetto;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,16 +9,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Objects;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
-import java.time.LocalDate;
 import java.sql.Date;
 import java.sql.Time;
 

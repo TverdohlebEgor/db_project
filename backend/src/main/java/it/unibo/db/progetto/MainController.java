@@ -27,6 +27,8 @@ public class MainController {
   final EventoRepository evento;
   final ProgettoRepository progetto;
   final ComunicazioneRepository comunicazione;
+  final RimborsoSpeseRepository rimborsoSpese;
+  final ValutaRepository valuta;
 
   @GetMapping("/progetti/utente") // '{id}' indica una variabile nel percorso
   public List<Progetto> getProgettiUtenti() {
@@ -183,7 +185,7 @@ public class MainController {
   }
 
   @PostMapping("/findComunicazioniByIdProgetto")
-  public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(@RequestBody Map<String, Integer> body) {
+  public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(@RequestBody Map<String, String> body) {
 
     return comunicazione.findComunicazioniByIdProgetto(body);
   }
@@ -201,4 +203,37 @@ public class MainController {
 
   }
 
+  @PostMapping("/progettoDelete")
+  public ResponseEntity<Void> deleteProgetto(@RequestBody Map<String, Integer> body) {
+    return progetto.deleteProgetto(body);
+  }
+
+  @PostMapping("/progettoToggleConcluso")
+  public ResponseEntity<Void> toggleConcluso(@RequestBody Map<String, Object> body) {
+    return progetto.toggleConcluso(body);
+
+  }
+
+  @PostMapping("/rimborsiByManager")
+  public ResponseEntity<List<RimborsoSpese>> getRimborsiByManager(@RequestBody Map<String, String> body) {
+    return rimborsoSpese.getRimborsiByManager(body);
+  }
+
+  @PostMapping("/findComunicazioniById")
+  public ResponseEntity<List<Comunicazione>> findComunicazioniById(@RequestBody Map<String, Integer> body) {
+
+    return comunicazione.findComunicazioniById(body);
+  }
+
+  @PostMapping("/valutaById")
+  public ResponseEntity<Valuta> getValutaById(@RequestBody Map<String, String> body) {
+
+    return valuta.getValutaById(body);
+  }
+
+  @PostMapping("/gestisciRimborso")
+  public ResponseEntity<String> gestisciRimborso(@RequestBody Map<String, String> body) {
+
+    return rimborsoSpese.gestisciRimborso(body);
+  }
 }

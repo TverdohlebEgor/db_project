@@ -18,7 +18,7 @@ import java.time.LocalDate;
  */
 public record RimborsoSpese (
 	int idRimborso,
-	boolean approvato,
+    Boolean approvato,
 	LocalDate data,
 	double importo,
 	int idComunicazione,

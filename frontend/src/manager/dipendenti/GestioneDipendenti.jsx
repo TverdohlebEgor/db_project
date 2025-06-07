@@ -1,82 +1,75 @@
 import { Button } from 'react-bootstrap';
-import { jsx } from 'react/jsx-runtime';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UserRow from './UserRow';
 
-
 function GestioneDipendenti({ manager }) {
-
     const [utenti, setUtenti] = useState([]);
-
-    const [ofManger, setOfManger] = useState(false);
-
+    const [ofManager, setOfManager] = useState(true); 
 
     const caricaDipendentiAssegnati = async () => {
-
         try {
-            const idUtente = manager.idUtente
             const response = await fetch('http://localhost:8080/api/employeesOfManager', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ idUtente })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idUtente: manager.idUtente }),
             });
-
             const data = await response.json();
-            setOfManger(true)
-
             setUtenti(data);
-
-
+            setOfManager(true);
         } catch (err) {
-            console.log(err)
-
+            console.error(err);
         }
-
     };
 
     const caricaDipendentiNonAssegnati = async () => {
-
-
-
         try {
-            const idUtente = manager.idUtente
             const response = await fetch('http://localhost:8080/api/allEmployeesNotAssociatedWith', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ idUtente })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idUtente: manager.idUtente }),
             });
-
             const data = await response.json();
-            setOfManger(false)
             setUtenti(data);
-
-
+            setOfManager(false);
         } catch (err) {
-            console.log(err)
-
+            console.error(err);
         }
-
     };
 
-
+    useEffect(() => {
+        if (manager?.idUtente) {
+            caricaDipendentiAssegnati();
+        }
+    }, [manager]);
 
     return (
         <div>
             <h3>Gestione Dipendenti</h3>
-            <Button className="me-2" onClick={caricaDipendentiAssegnati}>
-                Carica Dipendenti assegnati a me
+
+            <Button
+                variant={ofManager ? "primary" : "outline-primary"}
+                className="me-2"
+                onClick={caricaDipendentiAssegnati}
+            >
+                Mostra dipendenti assegnati a me
             </Button>
-            <Button onClick={caricaDipendentiNonAssegnati}>
-                Carica Dipendenti non asseganti a me
+
+            <Button
+                variant={!ofManager ? "primary" : "outline-primary"}
+                onClick={caricaDipendentiNonAssegnati}
+            >
+                Mostra dipendenti non assegnati a me
             </Button>
 
             {utenti.length > 0 ? (
                 utenti.map((utente) => (
-                    <UserRow key={utente.idUtente} utente={utente} manager={manager} ofManager={ofManger} refreshList={ofManger ? caricaDipendentiAssegnati : caricaDipendentiNonAssegnati} />
+                    <UserRow
+                        key={utente.idUtente}
+                        utente={utente}
+                        manager={manager}
+                        ofManager={ofManager}
+                        refreshList={ofManager ? caricaDipendentiAssegnati : caricaDipendentiNonAssegnati}
+                    />
                 ))
             ) : (
                 <p>Nessun utente caricato</p>

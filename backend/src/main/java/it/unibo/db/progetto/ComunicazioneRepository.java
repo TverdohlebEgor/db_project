@@ -70,14 +70,27 @@ public class ComunicazioneRepository {
         }
     }
 
-    public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(Map<String, Integer> body) {
-
-        Integer idProgetto = body.get("idProgetto");
+    public ResponseEntity<List<Comunicazione>> findComunicazioniById(Map<String, Integer> body) {
+        Integer idComunicazione = body.get("idComunicazione");
 
         List<Comunicazione> comunicazioni = jdbc.query(
-                "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdProgetto = ? ORDER BY IdComunicazione ASC",
+                "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdComunicazione = ? ORDER BY IdComunicazione DESC",
                 comunicazioneRowMapper,
-                idProgetto);
+                idComunicazione);
+
+        return ResponseEntity.ok(comunicazioni);
+
+    }
+
+    public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(Map<String, String> body) {
+
+        Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+        String tipo = body.get("tipo");
+
+        List<Comunicazione> comunicazioni = jdbc.query(
+                "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdProgetto = ? AND Tipo = ? ORDER BY IdComunicazione DESC",
+                comunicazioneRowMapper,
+                idProgetto, tipo);
 
         return ResponseEntity.ok(comunicazioni);
 
@@ -104,15 +117,13 @@ public class ComunicazioneRepository {
     public ResponseEntity<Integer> countVisuals(@RequestBody Map<String, Integer> body) {
 
         Integer idComunicazione = body.get("idComunicazione");
-        System.out.println("com: " + idComunicazione);
 
         Integer count = jdbc.queryForObject(
                 "SELECT COUNT(DISTINCT IdUtente) FROM Visualizzare WHERE IdComunicazione = ?",
                 Integer.class,
                 idComunicazione);
 
-        System.out.println("visual: " + count);
-
         return ResponseEntity.ok(count != null ? count : 0);
     }
+
 }

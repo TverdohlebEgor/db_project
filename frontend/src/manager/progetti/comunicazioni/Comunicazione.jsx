@@ -53,7 +53,8 @@ function Comunicazione({ comunicazione }) {
   return (
     <div className="comunicazione border p-3 mb-3 rounded shadow-sm bg-white">
       <p>{comunicazione.testo}</p>
-      <p style={{ fontWeight: "bold" }}>👁️ Visualizzazioni: {visualizzazioni}</p>
+
+      {visualizzazioni > 0 && <p style={{ fontWeight: "bold" }}> Visualizzazioni: {visualizzazioni}</p>}
 
       {immagini.length > 0 ? (
         <div className="immagini-container d-flex flex-wrap gap-3">

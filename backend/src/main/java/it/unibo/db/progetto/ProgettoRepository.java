@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import java.sql.Date;
 
 @Repository
@@ -59,6 +62,23 @@ public class ProgettoRepository {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore nella creazione del progetto");
         }
+    }
+
+    public ResponseEntity<Void> deleteProgetto(@RequestBody Map<String, Integer> body) {
+        Integer idProgetto = body.get("idProgetto");
+        jdbc.update("DELETE FROM Progetto WHERE IdProgetto = ?", idProgetto);
+        return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<Void> toggleConcluso(@RequestBody Map<String, Object> body) {
+        Integer idProgetto = Integer.parseInt(body.get("idProgetto").toString());
+        Boolean concluso = Boolean.parseBoolean(body.get("concluso").toString());
+
+        System.out.println(idProgetto);
+        System.out.println(concluso);
+
+        jdbc.update("UPDATE Progetto SET Concluso = ? WHERE IdProgetto = ?", concluso, idProgetto);
+        return ResponseEntity.ok().build();
     }
 
 }
