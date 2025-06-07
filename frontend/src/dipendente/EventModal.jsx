@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstrap'; // Added Spinner
 
 const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
-    console.log(idDipendente);
   const [key, setKey] = useState('hours');
   const [eventType, setEventType] = useState('Work');
   const [isOvertime, setIsOvertime] = useState(false);
@@ -65,8 +64,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
           }
           const data = await response.json();
-          console.log("Eventi");
-          console.log(data);
           setDailyWorkData(data);
         } catch (err) {
           console.error("Failed to fetch daily work data:", err);
@@ -149,7 +146,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
     try {
       // Replace with your actual API endpoint for adding event (might need to handle multipart/form-data)
-      console.log(formData);
       const response = await fetch('http://localhost:8080/api/add/event', {
         method: 'POST',
         // When sending FormData, DO NOT set 'Content-Type': 'application/json'
@@ -163,7 +159,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
       }
 
       const responseData = await response.json();
-      console.log('Event saved successfully:', responseData);
       alert('Event saved successfully!');
       handleClose();
     } catch (error) {
@@ -172,7 +167,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
   };
   const handleDelete = async (idToDelete) => {
-      console.log(`Attempting to delete event with ID: ${idToDelete}`);
       try {
         // Replace with your actual API endpoint for deleting an event
         const response = await fetch(`http://localhost:8080/api/delete/evento/${idToDelete}`, {
@@ -184,7 +178,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
           throw new Error(`Failed to delete event. Server responded with status: ${response.status}. Message: ${errorText}`);
         }
 
-        console.log('Event deleted successfully:', idToDelete);
         // Update the state to remove the deleted event from the UI
         setDailyWorkData(prevEvents => prevEvents.filter(event => event.IdEvento !== idToDelete)); // Filter dailyWorkData (the events array)
         alert('Event deleted successfully!');
@@ -254,20 +247,21 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                                   {event.tipo === 'LAVORO' ? (
                                     <>
                                       {/* Display full details for 'LAVORO' type */}
+                                      {/* event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A' */}
                                       <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
                                       <p><strong>Start Time:</strong> {event.oraInizio ?? 'N/A'}</p>
                                       <p><strong>End Time:</strong> {event.oraFine ?? 'N/A'}</p>
                                       <p><strong>Project:</strong> {event.nomeProgetto ?? 'No message provided.'}</p>
                                       <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
                                       <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
-                                      <p><strong>Approved:</strong> {event.approvato?.toString() ?? 'N/A'}</p>
+                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
                                     </>
                                   ) : (
                                     <>
                                       {/* Display only message for non-'LAVORO' types */}
                                       <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
                                       <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
-                                      <p><strong>Approved:</strong> {event.approvato?.toString() ?? 'N/A'}</p>
+                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
                                     </>
                                   )}
                                 </div>

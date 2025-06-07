@@ -85,6 +85,7 @@ const Calendar = ({dipendente}) => {
 
   return (
     <Container className="my-4">
+        <h1 className="text-center mb-4">Calendario</h1>
       <Row className="align-items-center mb-4">
         <Col className="text-start">
           <Button variant="outline-primary" onClick={handlePreviousMonth}>&lt; Previous</Button>
