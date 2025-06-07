@@ -80,7 +80,7 @@ public class UtenteRepository {
 
     private final RowMapper<EventoDisplay> eventoDisplayRowMapper = (rs, rowNum) -> new EventoDisplay(
             rs.getInt("IdEvento"),
-            rs.getBoolean("Approvato"),
+            rs.getString("Approvato"),
             rs.getDate("Data").toLocalDate(),
             TipoEvento.valueOf(normalizeContratto(rs.getString("Tipo"))),
             rs.getBoolean("Straordinario"),
@@ -88,7 +88,7 @@ public class UtenteRepository {
             rs.getTime("OraFine").toLocalTime(),
             rs.getString("nomeProgetto"),
             rs.getString("testo")
-    );
+        );
 
     public List<Utente> findAll() {
         return jdbc.query("SELECT * FROM Utente", utenteRowMapper);
@@ -175,7 +175,7 @@ public class UtenteRepository {
         Time finalHourStart = (hourStart == null || hourStart.isEmpty()) ? Time.valueOf("00:00:00") : Time.valueOf(hourStart + ":00");
         Time finalHourEnd   = (hourEnd == null || hourEnd.isEmpty())   ? Time.valueOf("23:59:59") : Time.valueOf(hourEnd + ":00");
         jdbc.update(addEventoQuery,
-                false,
+                null,
                 Date.valueOf(date),
                 finalType,
                 overtime,

@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,11 +25,18 @@ import java.util.Map;
 public class MainController {
 
   final UtenteRepository utente;
+  final ComunicazioneRepository comunicazione;
 
   @GetMapping("/progetti/utente") // '{id}' indica una variabile nel percorso
   public List<Progetto> getProgettiUtenti() {
       return utente.getProgetti();
   }
+
+  @GetMapping("get/forum/messages/{selectedTopicId}")
+  public List<Comunicazione> getMessaggiProgetto(@PathVariable int selectedTopicId){
+    return comunicazione.findComunicazioniByIdProgetto(selectedTopicId);
+  }
+
 
   @GetMapping("get/valuta") // '{id}' indica una variabile nel percorso
   public List<Valuta> getAllValute() {
@@ -43,6 +51,10 @@ public class MainController {
   @GetMapping("/get/rimborsi/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
   public List<RimborsoSpeseDisplay> getRimborsiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getRimborsiDipendente(date,idDipendente);
+  }
+  @GetMapping("get/forum/images/{messageId}")
+  public List<String> getForumImages(@PathVariable String messageId){
+    return comunicazione.immaginiByComunicazione(messageId);
   }
 
   @DeleteMapping("/delete/evento/{idToDelete}")
@@ -60,6 +72,11 @@ public class MainController {
   @GetMapping("/allEmployees")
   public List<Utente> getAllEmployees() {
     return utente.findAllEmployees();
+  }
+
+  @PostMapping("update/visualized")
+  public ResponseEntity<Boolean> updateVisualizzato(@RequestBody Map<String, String> body){
+    return comunicazione.updateVisualizzato(body);
   }
 
   @PostMapping("/allEmployeesNotAssociatedWith")

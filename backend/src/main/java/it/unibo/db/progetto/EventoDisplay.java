@@ -22,7 +22,7 @@ CREATE TABLE Evento (
 
 public record EventoDisplay (
 	int IdEvento,
-	boolean approvato,
+	String approvato,
 	LocalDate data,
 	TipoEvento tipo,
 	boolean staordinario,
