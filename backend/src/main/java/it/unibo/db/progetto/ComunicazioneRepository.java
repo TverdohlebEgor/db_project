@@ -115,7 +115,7 @@ public class ComunicazioneRepository {
         List<byte[]> immaginiBytes = jdbc.query(
                 "SELECT Immagini FROM Immagine Im JOIN Comunicazione Co ON Im.IdComunicazione = Co.IdComunicazione WHERE Co.IdComunicazione = ?",
                 (rs, rowNum) -> rs.getBytes("Immagini"),
-                idComunicazione);
+                Integer.valueOf(idComunicazione));
 
         List<String> immaginiBase64 = immaginiBytes.stream()
                 .map(bytes -> "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes))
