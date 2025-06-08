@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import Manager from './manager/Manager';
 import Dipendente from './dipendente/Dipendente';
-import Amministratore from './amministratore/Amministratore';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -86,9 +85,7 @@ function LoginForm() {
   else if (data.tipo === 'DIPENDENTE') {
     return <Dipendente dipendente = {data}/>;
   }
-  else if (isAmministratore === true){
-      return <Amministratore amministratore = {amministratoreData}/>;
-    }
+ 
 
   return (
     <div>

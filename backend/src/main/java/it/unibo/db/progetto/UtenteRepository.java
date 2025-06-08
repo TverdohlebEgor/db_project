@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Objects;
@@ -31,9 +30,9 @@ public class UtenteRepository {
     }
 
     private final RowMapper<Amministratore> amministratoreRowMapper = (rs, rowNum) -> new Amministratore(
-                rs.getInt("idAmministratore"),
-                rs.getString("email"),
-                rs.getString("password"));
+            rs.getInt("idAmministratore"),
+            rs.getString("email"),
+            rs.getString("password"));
 
     private final RowMapper<Utente> utenteRowMapper = (rs, rowNum) -> new Utente(
             rs.getInt("IdUtente"),
@@ -128,6 +127,7 @@ public class UtenteRepository {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
     public ResponseEntity<Amministratore> amministratoreLogin(Map<String, String> body) {
         String email = body.get("email");
         String password = body.get("password");
@@ -168,13 +168,13 @@ public class UtenteRepository {
         }
 
     }
+
     public ResponseEntity<Boolean> addValuta(Map<String, String> body) {
         try {
             jdbc.update("INSERT INTO VALUTA (idAmministratore,nome,simbolo) VALUES (?,?,?)",
                     Integer.valueOf(body.get("id")),
                     body.get("code"),
-                    body.get("symbol")
-            );
+                    body.get("symbol"));
             return ResponseEntity.ok(true);
         } catch (Exception e) {
             e.printStackTrace();
@@ -183,7 +183,7 @@ public class UtenteRepository {
         }
     }
 
-    public ResponseEntity<Boolean> updateEventi(Map<String, String> body){
+    public ResponseEntity<Boolean> updateEventi(Map<String, String> body) {
         String datestring = body.get("date");
         if (datestring == null || datestring.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(false);
@@ -196,8 +196,9 @@ public class UtenteRepository {
             System.err.println("Unexpected error: " + e.getMessage());
             return ResponseEntity.internalServerError().body(false);
         }
-        System.out.println("Here:"+sqlDateParam);
-        jdbc.update("UPDATE Evento SET Approvato = TRUE WHERE (Data + INTERVAL '14 days') > (CAST(? AS DATE))",sqlDateParam);
+        System.out.println("Here:" + sqlDateParam);
+        jdbc.update("UPDATE Evento SET Approvato = TRUE WHERE (Data + INTERVAL '14 days') > (CAST(? AS DATE))",
+                sqlDateParam);
         return ResponseEntity.ok(true);
     }
 
@@ -525,58 +526,66 @@ public class UtenteRepository {
     }
 
     public ResponseEntity<?> aggiornaFerie(@RequestBody Map<String, Integer> body) {
-        try {
+    try {
+        int idEvento = body.get("idEvento");
 
-            int idEvento = body.get("idEvento");
+        String sqlEvento = """
+                    SELECT Tipo, Approvato, OraInizio, OraFine, IdUtente
+                    FROM Evento
+                    WHERE IdEvento = ?
+                """;
 
-            String sqlEvento = """
-                        SELECT Tipo, Approvato, OraInizio, OraFine, IdUtente
-                        FROM Evento
-                        WHERE IdEvento = ?
-                    """;
+        Map<String, Object> evento = jdbc.queryForMap(sqlEvento, idEvento);
 
-            Map<String, Object> evento = jdbc.queryForMap(sqlEvento, idEvento);
-
-            if (!Boolean.TRUE.equals(evento.get("Approvato"))) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Evento non approvato.");
-            }
-
-            if (!"Lavoro".equalsIgnoreCase((String) evento.get("Tipo"))) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Evento non di lavoro");
-
-            }
-
-            Time inizio = (Time) evento.get("OraInizio");
-            Time fine = (Time) evento.get("OraFine");
-
-            long minutiLavorati = (fine.getTime() - inizio.getTime()) / (1000 * 60);
-
-            if (minutiLavorati <= 0) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Durata evento non valida.");
-            }
-
-            double moltiplicatore = 0.1;
-            int minutiFerie = (int) Math.round(minutiLavorati * moltiplicatore);
-
-            int idUtente = (int) evento.get("IdUtente");
-
-            String sqlUpdate = """
-                        UPDATE Utente
-                        SET FerieAccumulate = FerieAccumulate + ?
-                        WHERE IdUtente = ?
-                    """;
-
-            jdbc.update(sqlUpdate, minutiFerie, idUtente);
-
-            return ResponseEntity.ok("Ferie aggiornate con successo: +" + minutiFerie + " minuti");
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Errore nel calcolo ferie: " + e.getMessage());
+        if (!Boolean.TRUE.equals(evento.get("Approvato"))) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Evento non approvato.");
         }
+
+        if (!"Lavoro".equalsIgnoreCase((String) evento.get("Tipo"))) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Evento non di lavoro");
+        }
+
+        Time inizio = (Time) evento.get("OraInizio");
+        Time fine = (Time) evento.get("OraFine");
+
+        long inizioMillis = inizio.getTime();
+        long fineMillis = fine.getTime();
+
+        // Gestione evento che passa la mezzanotte
+        if (fineMillis <= inizioMillis) {
+            fineMillis += 24 * 60 * 60 * 1000;
+        }
+
+        long minutiLavorati = (fineMillis - inizioMillis) / (1000 * 60);
+
+        if (minutiLavorati <= 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Durata evento non valida.");
+        }
+
+        double moltiplicatore = 0.1;
+        int minutiFerie = (int) Math.round(minutiLavorati * moltiplicatore);
+
+        int idUtente = (int) evento.get("IdUtente");
+
+        String sqlUpdate = """
+                    UPDATE Utente
+                    SET FerieAccumulate = FerieAccumulate + ?
+                    WHERE IdUtente = ?
+                """;
+
+        jdbc.update(sqlUpdate, minutiFerie, idUtente);
+
+        return ResponseEntity.ok("Ferie aggiornate con successo: +" + minutiFerie + " minuti");
+
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Errore nel calcolo ferie: " + e.getMessage());
     }
+}
+
+
 
 }
