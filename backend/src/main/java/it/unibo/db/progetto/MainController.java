@@ -33,14 +33,13 @@ public class MainController {
 
   @GetMapping("/progetti/utente") // '{id}' indica una variabile nel percorso
   public List<Progetto> getProgettiUtenti() {
-      return utente.getProgetti();
+    return utente.getProgetti();
   }
 
   @GetMapping("get/forum/messages/{selectedTopicId}")
-  public List<Comunicazione> getMessaggiProgetto(@PathVariable int selectedTopicId){
+  public List<Comunicazione> getMessaggiProgetto(@PathVariable int selectedTopicId) {
     return comunicazione.findComunicazioniByIdProgetto(selectedTopicId);
   }
-
 
   @GetMapping("get/valuta") // '{id}' indica una variabile nel percorso
   public List<Valuta> getAllValute() {
@@ -49,15 +48,16 @@ public class MainController {
 
   @GetMapping("/get/evento/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
   public List<EventoDisplay> getEventiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
-    return utente.getEventiDipendentne(date,idDipendente);
+    return utente.getEventiDipendentne(date, idDipendente);
   }
 
   @GetMapping("/get/rimborsi/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
   public List<RimborsoSpeseDisplay> getRimborsiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
-    return utente.getRimborsiDipendente(date,idDipendente);
+    return utente.getRimborsiDipendente(date, idDipendente);
   }
+
   @GetMapping("get/forum/images/{messageId}")
-  public List<String> getForumImages(@PathVariable String messageId){
+  public List<String> getForumImages(@PathVariable String messageId) {
     return comunicazione.immaginiByComunicazione(messageId);
   }
 
@@ -79,12 +79,12 @@ public class MainController {
   }
 
   @PostMapping("update/visualized")
-  public ResponseEntity<Boolean> updateVisualizzato(@RequestBody Map<String, String> body){
+  public ResponseEntity<Boolean> updateVisualizzato(@RequestBody Map<String, String> body) {
     return comunicazione.updateVisualizzato(body);
   }
 
   @PostMapping("/allEmployeesNotAssociatedWith")
-  public  ResponseEntity<List<Utente>> getAllEmployeesNotAssociatedWith(@RequestBody Map<String, String> body) {
+  public ResponseEntity<List<Utente>> getAllEmployeesNotAssociatedWith(@RequestBody Map<String, String> body) {
 
     return utente.findAllEmployeesNotAssociatedWith(body);
   }
@@ -98,29 +98,28 @@ public class MainController {
 
   @PostMapping(value = "/add/event", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addEvent(
-          @RequestParam("date") String date,
-          @RequestParam("type") String type,
-          @RequestParam("overtime") String overtime,
-          @RequestParam("hourStart") String hourStart,
-          @RequestParam("hourEnd") String hourEnd,
-          @RequestParam("message") String message,
-          @RequestParam("projectId") String projectId,
-          @RequestParam("idDipendente") int idDipendente,
-          @RequestPart(value = "images", required = false) List<MultipartFile> images
-  ) {
-    return utente.addEvent(date,type,overtime == "true" ? true : false,hourStart,hourEnd,projectId,idDipendente,message,images);
+      @RequestParam("date") String date,
+      @RequestParam("type") String type,
+      @RequestParam("overtime") String overtime,
+      @RequestParam("hourStart") String hourStart,
+      @RequestParam("hourEnd") String hourEnd,
+      @RequestParam("message") String message,
+      @RequestParam("projectId") String projectId,
+      @RequestParam("idDipendente") int idDipendente,
+      @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+    return utente.addEvent(date, type, overtime == "true" ? true : false, hourStart, hourEnd, projectId, idDipendente,
+        message, images);
   }
 
   @PostMapping(value = "/add/rimborso", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addRimborso(
-          @RequestParam("date") String date,
-          @RequestParam("import") double importo,
-          @RequestParam("message") String message,
-          @RequestParam("idDipendente") int idDipendente,
-          @RequestParam("idValuta") String idValuta,
-          @RequestPart(value = "images", required = false) List<MultipartFile> images
-  ) {
-    return utente.addRimborso(date,importo,message,idDipendente,idValuta,images);
+      @RequestParam("date") String date,
+      @RequestParam("import") double importo,
+      @RequestParam("message") String message,
+      @RequestParam("idDipendente") int idDipendente,
+      @RequestParam("idValuta") String idValuta,
+      @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+    return utente.addRimborso(date, importo, message, idDipendente, idValuta, images);
   }
 
   @PostMapping("/employeesOfManager")
@@ -202,7 +201,7 @@ public class MainController {
   }
 
   @PostMapping("/findComunicazioniByIdProgetto")
-  public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(@RequestBody Map<String, String> body) {
+  public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(@RequestBody Map<String, Integer> body) {
 
     return comunicazione.findComunicazioniByIdProgetto(body);
   }
@@ -257,5 +256,10 @@ public class MainController {
   @PostMapping("/updateApprovazione")
   public ResponseEntity<?> updateApprovazione(@RequestBody Map<String, String> body) {
     return evento.updateApprovazione(body);
+  }
+
+  @PostMapping("/getUtentebyId")
+  public ResponseEntity<Utente> getUtenteById(@RequestBody Map<String, Integer> body) {
+    return utente.getUtenteById(body);
   }
 }

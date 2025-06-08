@@ -37,7 +37,18 @@ public class ComunicazioneRepository {
         try {
             String tipo = body.get("tipo");
             String testo = body.get("testo");
-            Integer idProgetto = Integer.parseInt(body.get("idProgetto"));
+
+            Integer idProgetto = null;
+            String idProgettoStr = body.get("idProgetto");
+            if (idProgettoStr != null && !idProgettoStr.trim().isEmpty()) {
+                try {
+                    idProgetto = Integer.parseInt(idProgettoStr);
+                } catch (NumberFormatException e) {
+                    idProgetto = null;
+                }
+            }
+
+            final Integer idProgettoFinal = idProgetto; // qui la variabile finale
 
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbc.update(connection -> {
@@ -46,7 +57,11 @@ public class ComunicazioneRepository {
                         Statement.RETURN_GENERATED_KEYS);
                 ps.setString(1, testo);
                 ps.setString(2, tipo);
-                ps.setInt(3, idProgetto);
+                if (idProgettoFinal != null) {
+                    ps.setInt(3, idProgettoFinal);
+                } else {
+                    ps.setNull(3, java.sql.Types.INTEGER);
+                }
                 return ps;
             }, keyHolder);
 
@@ -72,15 +87,13 @@ public class ComunicazioneRepository {
 
     public List<Comunicazione> findComunicazioniByIdProgetto(int idProgetto) {
         List<Comunicazione> comunicazioni;
-        if(idProgetto == 0){
+        if (idProgetto == 0) {
             comunicazioni = jdbc.query(
-                    "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE Tipo = \'Forum\' ORDER BY IdComunicazione ASC",
-                    comunicazioneRowMapper
-                    );
-        }
-        else {
+                    "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE Tipo = \'Forum\' ORDER BY IdComunicazione DESC",
+                    comunicazioneRowMapper);
+        } else {
             comunicazioni = jdbc.query(
-                    "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdProgetto = ? AND Tipo = \'Progetto\' ORDER BY IdComunicazione ASC",
+                    "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdProgetto = ? AND Tipo = \'Progetto\' ORDER BY IdComunicazione DESC",
                     comunicazioneRowMapper,
                     idProgetto);
         }
@@ -88,13 +101,12 @@ public class ComunicazioneRepository {
         return comunicazioni;
     }
 
-    public ResponseEntity<Boolean> updateVisualizzato(@RequestBody Map<String, String> body){
-        try{
-            if(body.get("isVisualized") == "true") {
+    public ResponseEntity<Boolean> updateVisualizzato(@RequestBody Map<String, String> body) {
+        try {
+            if (body.get("isVisualized") == "true") {
                 jdbc.update("INSERT INTO Visualizzare(IdComunicazione,IdUtente) VALUES("
                         + body.get("idMessagio") + ", " + body.get("idDipendente") + ")");
-            }
-            else{
+            } else {
                 jdbc.update("DELETE FROM Visualizzare WHERE IdComunicazione = "
                         + body.get("idMessagio") + " AND IdUtente = " + body.get("idDipendente"));
             }
@@ -106,7 +118,7 @@ public class ComunicazioneRepository {
         return ResponseEntity.ok(true);
     }
 
-    public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto( Map<String, Integer> body){
+    public ResponseEntity<List<Comunicazione>> findComunicazioniByIdProgetto(Map<String, Integer> body) {
         Integer idProgetto = body.get("idProgetto");
         return ResponseEntity.ok(findComunicazioniByIdProgetto(idProgetto));
     }
@@ -123,6 +135,7 @@ public class ComunicazioneRepository {
 
         return immaginiBase64;
     }
+
     public ResponseEntity<List<String>> immaginiByComunicazione(@RequestBody Map<String, Integer> body) {
         String idComunicazione = String.valueOf(body.get("idComunicazione"));
         if (idComunicazione == null) {
@@ -141,5 +154,16 @@ public class ComunicazioneRepository {
                 idComunicazione);
 
         return ResponseEntity.ok(count != null ? count : 0);
+    }
+
+    public ResponseEntity<List<Comunicazione>> findComunicazioniById(Map<String, Integer> body) {
+        List<Comunicazione> comunicazioni;
+        Integer idComunicazione = body.get("idComunicazione");
+        comunicazioni = jdbc.query(
+                "SELECT IdComunicazione, Tipo, Testo, IdProgetto FROM Comunicazione WHERE IdComunicazione = ? AND Tipo = \'Richiesta\' ORDER BY IdComunicazione ASC",
+                comunicazioneRowMapper,
+                idComunicazione);
+
+        return ResponseEntity.ok(comunicazioni);
     }
 }

@@ -47,23 +47,20 @@ public class UtenteRepository {
             rs.getInt("IdProgetto"),
             rs.getString("nomeProgetto"),
             rs.getBoolean("concluso"),
-            rs.getDate("deadline").toLocalDate()
-    );
+            rs.getDate("deadline").toLocalDate());
 
     private final RowMapper<Valuta> valutaRowMapper = (rs, rowNum) -> new Valuta(
             rs.getInt("idValuta"),
             rs.getInt("idAmministratore"),
             rs.getString("nome"),
-            rs.getString("simbolo")
-    );
+            rs.getString("simbolo"));
 
     private final RowMapper<RimborsoSpeseDisplay> rimborsoSpeseRowMapper = (rs, rowNum) -> new RimborsoSpeseDisplay(
             rs.getInt("idRimborso"),
             rs.getBoolean("approvato"),
             rs.getDouble("importo"),
             rs.getString("testo"),
-            rs.getString("nome")
-    );
+            rs.getString("nome"));
 
     private final RowMapper<Evento> eventoRowMapper = (rs, rowNum) -> new Evento(
             rs.getInt("IdEvento"),
@@ -75,8 +72,7 @@ public class UtenteRepository {
             rs.getTime("OraFine").toLocalTime(),
             rs.getInt("IdUtente"),
             rs.getInt("IdProgetto"),
-            rs.getInt("IdComunicazione")
-    );
+            rs.getInt("IdComunicazione"));
 
     private final RowMapper<EventoDisplay> eventoDisplayRowMapper = (rs, rowNum) -> new EventoDisplay(
             rs.getInt("IdEvento"),
@@ -87,8 +83,7 @@ public class UtenteRepository {
             rs.getTime("OraInizio").toLocalTime(),
             rs.getTime("OraFine").toLocalTime(),
             rs.getString("nomeProgetto"),
-            rs.getString("testo")
-    );
+            rs.getString("testo"));
 
     public List<Utente> findAll() {
         return jdbc.query("SELECT * FROM Utente", utenteRowMapper);
@@ -274,15 +269,15 @@ public class UtenteRepository {
             String nomeProgetto,
             int idDipendente,
             String message,
-            List<MultipartFile> images
-    ) {
-        List<Progetto> temp = jdbc.query("SELECT * FROM PROGETTO WHERE nomeProgetto = ?",progettoRowMapper,nomeProgetto);
-        if(temp.isEmpty()){
+            List<MultipartFile> images) {
+        List<Progetto> temp = jdbc.query("SELECT * FROM PROGETTO WHERE nomeProgetto = ?", progettoRowMapper,
+                nomeProgetto);
+        if (temp.isEmpty()) {
             return ResponseEntity.badRequest().body(false);
         }
         int idProgetto = temp.getFirst().idProgetto();
-        int generatedComunicazioneId = insertMessage("Richiesta",message,idProgetto);
-        insertImmages(images,generatedComunicazioneId);
+        int generatedComunicazioneId = insertMessage("Richiesta", message, idProgetto);
+        insertImmages(images, generatedComunicazioneId);
 
         String addEventoQuery = "INSERT INTO Evento (\n" +
                 "    Approvato,\n" +
@@ -344,7 +339,7 @@ public class UtenteRepository {
     public List<Progetto> getProgetti() {
         return jdbc.query("SELECT * FROM PROGETTO AS p WHERE (\n" +
                 "\tp.idProgetto IN (SELECT idProgetto FROM Attribuire AS a WHERE a.idProgetto = p.idProgetto)\n" +
-                ")",progettoRowMapper);
+                ")", progettoRowMapper);
     }
 
     public List<EventoDisplay> getEventiDipendentne(String date, int idDipendente) {
@@ -368,26 +363,26 @@ public class UtenteRepository {
         return eventi;
     }
 
-    public List<RimborsoSpeseDisplay> getRimborsiDipendente(String date,int idDipendente) {
+    public List<RimborsoSpeseDisplay> getRimborsiDipendente(String date, int idDipendente) {
         String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome " +
                 "FROM RIMBORSOSPESE AS R,  " +
                 "COMUNICAZIONE AS C, " +
-                "VALUTA AS V "+
+                "VALUTA AS V " +
                 "WHERE Data = ? " +
                 "AND idUtente = ? " +
-                "AND R.idComunicazione = C.idComunicazione "+
+                "AND R.idComunicazione = C.idComunicazione " +
                 "AND R.idValuta = V.idValuta";
         List<RimborsoSpeseDisplay> eventi = jdbc.query(
                 selectEventoQuery,
                 rimborsoSpeseRowMapper,
-                Date.valueOf(date),     // This is already a java.sql.Date
-                idDipendente            // This is already an int
+                Date.valueOf(date), // This is already a java.sql.Date
+                idDipendente // This is already an int
         );
 
         return eventi;
     }
 
-    public boolean deleteEvento(int eventoId){
+    public boolean deleteEvento(int eventoId) {
         try {
             jdbc.update("DELETE FROM EVENTO WHERE IdEvento = " + eventoId);
             return true;
@@ -395,7 +390,8 @@ public class UtenteRepository {
             return false;
         }
     }
-    public boolean deleteRimborso(String rimborsoId){
+
+    public boolean deleteRimborso(String rimborsoId) {
         try {
             jdbc.update("DELETE FROM RIMBORSOSPESE WHERE IdRimborso = " + rimborsoId);
             return true;
@@ -408,8 +404,8 @@ public class UtenteRepository {
         return dbValue.toUpperCase().replace(" ", "_");
     }
 
-    private String convertType(String type){
-        return switch (type){
+    private String convertType(String type) {
+        return switch (type) {
             case "Work" -> "Lavoro";
             case "Holiday" -> "Ferie";
             case "Permission" -> "Permesso";
@@ -418,11 +414,11 @@ public class UtenteRepository {
         };
     }
 
-    private int insertMessage(String tipo, String message, int idProgetto){
+    private int insertMessage(String tipo, String message, int idProgetto) {
         String addMessageQuery = "INSERT INTO  Comunicazione (Tipo, Testo, IdProgetto) VALUES (?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[]{"idcomunicazione"});
+            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[] { "idcomunicazione" });
             ps.setString(1, tipo);
             ps.setString(2, message);
             ps.setInt(3, idProgetto);
@@ -430,11 +426,12 @@ public class UtenteRepository {
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
-    private int insertMessage(String tipo, String message){
+
+    private int insertMessage(String tipo, String message) {
         String addMessageQuery = "INSERT INTO  Comunicazione (Tipo, Testo) VALUES (?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[]{"idcomunicazione"});
+            PreparedStatement ps = connection.prepareStatement(addMessageQuery, new String[] { "idcomunicazione" });
             ps.setString(1, tipo);
             ps.setString(2, message);
             return ps;
@@ -442,7 +439,7 @@ public class UtenteRepository {
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
-    private void insertImmages(List<MultipartFile> images, int IdComunicazione){
+    private void insertImmages(List<MultipartFile> images, int IdComunicazione) {
         if (images != null && !images.isEmpty()) {
             String insertImageQuery = "INSERT INTO Immagine (Immagini, IdComunicazione) VALUES (?, ?)";
             for (MultipartFile image : images) {
@@ -458,4 +455,10 @@ public class UtenteRepository {
         }
     }
 
+    public ResponseEntity<Utente> getUtenteById(Map<String, Integer> body) {
+        int idUtente = body.get("idUtente");
+
+        String sql = "SELECT * FROM Utente WHERE IdUtente = ?";
+        return ResponseEntity.ok(jdbc.queryForObject(sql, utenteRowMapper, idUtente));
+    }
 }
