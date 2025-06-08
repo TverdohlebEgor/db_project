@@ -47,8 +47,12 @@ public class MainController {
 
   @PostMapping("/add/valuta")
   public ResponseEntity<Boolean> addValuta(@RequestBody Map<String, String> body){
-    System.out.println(body);
     return utente.addValuta(body);
+  }
+
+  @PostMapping("/update/eventi")
+  public ResponseEntity<Boolean> updateEventi(@RequestBody Map<String, String> body){
+    return utente.updateEventi(body);
   }
 
   @GetMapping("/get/evento/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso

@@ -17,8 +17,28 @@ function LoginForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    updateEventi();
     fetchUsers();
     fetchAmministratore();
+  };
+
+  const updateEventi = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/update/eventi', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ date : new Date() })
+      });
+
+      const data = await response.json();
+
+      setData(data)
+    } catch (err) {
+      setMessage("Errore email o password errati")
+
+    }
   };
 
 

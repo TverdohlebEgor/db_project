@@ -13,6 +13,8 @@ import java.util.Objects;
 import java.sql.PreparedStatement;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -179,6 +181,24 @@ public class UtenteRepository {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
         }
+    }
+
+    public ResponseEntity<Boolean> updateEventi(Map<String, String> body){
+        String datestring = body.get("date");
+        if (datestring == null || datestring.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(false);
+        }
+        LocalDate sqlDateParam;
+        try {
+            OffsetDateTime odt = OffsetDateTime.parse(datestring);
+            sqlDateParam = odt.toLocalDate();
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(false);
+        }
+        System.out.println("Here:"+sqlDateParam);
+        jdbc.update("UPDATE Evento SET Approvato = TRUE WHERE (Data + INTERVAL '14 days') > (CAST(? AS DATE))",sqlDateParam);
+        return ResponseEntity.ok(true);
     }
 
     public ResponseEntity<String> removeEmployeeFromManager(Map<String, String> body) {
