@@ -56,8 +56,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         setIsLoadingDailyData(true);
         setDailyDataError(null);
         try {
-          const dateString = selectedDate.toISOString().split('T')[0];
-          // Replace with your actual API endpoint for fetching daily data
+          const dateString = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
           const response = await fetch(`http://localhost:8080/api/get/evento/`+dateString+'/'+idDipendente);
           if (!response.ok) {
             const errorText = await response.text();
@@ -224,7 +223,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                                        margin: '10px 0',
                                        borderRadius: '5px',
                                        position: 'relative',
-                                       backgroundColor: event.approvato ? '#e6ffe6' : '#ffe6e6' // Green for approved, light red for not
+                                      backgroundColor: event.approvato === null ? 'transparent' : (event.approvato === "t" ? '#e6ffe6' : '#ffe6e6')
                                      }}
                                 >
                                   {/* Delete button for each event */}
@@ -255,14 +254,14 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                                       <p><strong>Project:</strong> {event.nomeProgetto ?? 'No message provided.'}</p>
                                       <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
                                       <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
-                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
+                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'f' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
                                     </>
                                   ) : (
                                     <>
                                       {/* Display only message for non-'LAVORO' types */}
                                       <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
                                       <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
-                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'false' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
+                                      <p><strong>Approved:</strong> {event.approvato === null ? 'Pendente' : (event.approvato === 'f' ? 'Rifiutato' : 'Accettato') ?? 'N/A'}</p>
                                     </>
                                   )}
                                 </div>

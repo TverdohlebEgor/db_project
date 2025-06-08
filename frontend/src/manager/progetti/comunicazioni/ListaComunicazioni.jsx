@@ -15,7 +15,7 @@ function ListaComunicazioni({ progetto, reload }) {
         const response = await fetch('http://localhost:8080/api/findComunicazioniByIdProgetto', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idProgetto: progetto.idProgetto, tipo: "Progetto" })
+          body: JSON.stringify({ idProgetto: progetto.idProgetto })
         });
 
         if (!response.ok) throw new Error("Errore nel caricamento comunicazioni");

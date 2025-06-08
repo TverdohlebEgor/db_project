@@ -1,14 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import GestioneDipendenti from './dipendenti/GestioneDipendenti';
 import GestioneProgetti from './progetti/GestioneProgetti';
-import ForumManager from './ForumManager';
 import NavigationBar from './NavigationBar';
 import ProgettoInfo from './progetti/ProgettoInfo';
 import GestioneMembriProgetto from './progetti/GestioneMembriProgetto';
 import GestioneMembriManager from './progetti/GestioneMembriManager';
 import GestioneRimborsi from './rimborsi/GestioneRimborsi';
 import CalendarioDipendente from './dipendenti/CalendarioDipendente/CalendarioDipendente';
-
+import ForumManager from './forum/ForumManager';
 
 function Manager({ manager }) {
     return (

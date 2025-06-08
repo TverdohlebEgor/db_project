@@ -51,9 +51,12 @@ function UserRow({ utente, manager, ofManager, refreshList }) {
 
     return (
         <div className="user-card" style={{ border: "1px solid gray", margin: "10px", padding: "10px" }}>
-            <Button variant="secondary" onClick={vaiAlCalendario}>
+            <div>
                 {utente.nome} {utente.cognome}
-            </Button>
+            </div>
+            {ofManager && <Button variant="secondary" onClick={vaiAlCalendario}>
+                Vai al calendario
+            </Button>}
 
             <p>Email: {utente.email}</p>
 

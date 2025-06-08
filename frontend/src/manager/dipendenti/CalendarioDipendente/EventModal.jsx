@@ -52,16 +52,12 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
 
   const handleApproval = async (eventId, approve) => {
+    const approveStr = approve ? "t" : "f";  // Trasformo in stringa coerente con backend
     try {
       const response = await fetch(`http://localhost:8080/api/updateApprovazione`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          idEvento: eventId,
-          approvato: approve
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idEvento: eventId, approvato: approveStr })  // Invio "t" o "f"
       });
 
       if (!response.ok) {
@@ -71,14 +67,14 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
       setDailyWorkData(prev =>
         prev.map(ev =>
-          ev.IdEvento === eventId ? { ...ev, approvato: approve } : ev
+          ev.IdEvento === eventId ? { ...ev, approvato: approveStr } : ev  // Aggiorno con stringa
         )
       );
     } catch (error) {
       console.error('Errore durante approvazione evento:', error);
       alert(`Errore: ${error.message}`);
     }
-  };
+  }
 
 
   useEffect(() => {
@@ -88,14 +84,17 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         setDailyDataError(null);
         try {
           const dateString = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
-          const response = await fetch(`http://localhost:8080/api/get/evento/${dateString}/${idDipendente}`);
+          const response = await fetch(`http://localhost:8080/api/get/evento/` + dateString + '/' + idDipendente);
           if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
           }
           const data = await response.json();
+          console.log("Eventi");
+          console.log(data);
           setDailyWorkData(data);
         } catch (err) {
+          console.error("Failed to fetch daily work data:", err);
           setDailyDataError(`Failed to load data: ${err.message || 'Network error'}`);
         } finally {
           setIsLoadingDailyData(false);
@@ -159,9 +158,8 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
     // For sending files, you typically use FormData
     const formData = new FormData();
-    const localDate = selectedDate ? `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}` : '';
-    formData.append('date', localDate);
-
+    formData.append('date', selectedDate ? selectedDate.toISOString().split('T')[0] : '');
+    formData.append('type', eventType);
     formData.append('overtime', isOvertime);
     formData.append('hourStart', hourStart);
     formData.append('hourEnd', hourEnd);
@@ -176,7 +174,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
     try {
       // Replace with your actual API endpoint for adding event (might need to handle multipart/form-data)
-      console.log(formData);
       const response = await fetch('http://localhost:8080/api/add/event', {
         method: 'POST',
         // When sending FormData, DO NOT set 'Content-Type': 'application/json'
@@ -190,7 +187,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
       }
 
       const responseData = await response.json();
-      console.log('Event saved successfully:', responseData);
       alert('Event saved successfully!');
       handleClose();
     } catch (error) {
@@ -256,7 +252,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                           margin: '10px 0',
                           borderRadius: '5px',
                           position: 'relative',
-                          backgroundColor: event.approvato === null ? 'transparent' : (event.approvato ? '#e6ffe6' : '#ffe6e6')
+                          backgroundColor: event.approvato === null ? 'transparent' : (event.approvato === "t" ? '#e6ffe6' : '#ffe6e6')
                         }}
                       >
                         {/* Delete button for each event */}
@@ -274,7 +270,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                           }}
                           title="Delete Event" // Hover tooltip
                         >
-                          &times; 
+                          &times;
                         </button>
 
                         {/* Conditional rendering based on event.tipo */}
@@ -288,9 +284,9 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                             <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
                             <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
                             <p><strong>Approved:</strong> {
-                              event.approvato === null || event.approvato === undefined
+                              event.approvato === null
                                 ? 'Pending'
-                                : event.approvato === true
+                                : event.approvato === "t"
                                   ? 'Yes'
                                   : 'No'
                             }</p>                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
@@ -314,13 +310,13 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                           </>
                         ) : (
                           <>
-                            {/* Display only message for non-'LAVORO' types */}
+                            {console.log(event.approvato)}
                             <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
                             <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
                             <p><strong>Approved:</strong> {
-                              event.approvato === null || event.approvato === undefined
+                              event.approvato === null
                                 ? 'Pending'
-                                : event.approvato === true
+                                : event.approvato === "t"
                                   ? 'Yes'
                                   : 'No'
                             }</p>                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
