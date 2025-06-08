@@ -377,7 +377,7 @@ public class UtenteRepository {
                 "IdUtente," +
                 "IdValuta)" +
                 " VALUES (?,?,?,?,?,?)",
-                false,
+                null,
                 Date.valueOf(date),
                 importo,
                 generatedComunicazioneId,
