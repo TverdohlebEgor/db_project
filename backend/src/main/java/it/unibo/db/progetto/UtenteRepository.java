@@ -9,16 +9,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Objects;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
-import java.time.LocalDate;
 import java.sql.Date;
 import java.sql.Time;
 
@@ -461,4 +457,16 @@ public class UtenteRepository {
         String sql = "SELECT * FROM Utente WHERE IdUtente = ?";
         return ResponseEntity.ok(jdbc.queryForObject(sql, utenteRowMapper, idUtente));
     }
+
+    public ResponseEntity<List<Utente>> getStatisticheFerieAccumulate() {
+        String sql = """
+                    SELECT * FROM Utente
+                    WHERE FerieAccumulate > 30
+                    ORDER BY FerieAccumulate DESC
+                """;
+
+        List<Utente> utenti = jdbc.query(sql, utenteRowMapper);
+        return ResponseEntity.ok(utenti);
+    }
+
 }

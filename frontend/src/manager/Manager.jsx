@@ -8,6 +8,8 @@ import GestioneMembriManager from './progetti/GestioneMembriManager';
 import GestioneRimborsi from './rimborsi/GestioneRimborsi';
 import CalendarioDipendente from './dipendenti/CalendarioDipendente/CalendarioDipendente';
 import ForumManager from './forum/ForumManager';
+import Dashboard from './dashboard/DashBoard';
+import Calendar from '../dipendente/Calendario';
 
 function Manager({ manager }) {
     return (
@@ -18,6 +20,10 @@ function Manager({ manager }) {
                 <Route path="/progetti" element={<GestioneProgetti manager={manager} />} />
                 <Route path="/forum" element={<ForumManager manager={manager} />} />
                 <Route path="/rimborsi" element={<GestioneRimborsi manager={manager} />} />
+                <Route path="/dashboard" element={<Dashboard manager={manager} />} />
+                <Route path="/calendarioManager" element={<Calendar dipendente={manager} />} />
+
+
 
                 <Route path="/progetto/:id" element={<ProgettoInfo />} />
                 <Route path="/progetto/:id/gestione" element={<GestioneMembriProgetto />} />

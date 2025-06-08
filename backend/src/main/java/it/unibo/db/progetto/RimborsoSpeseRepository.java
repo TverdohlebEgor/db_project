@@ -8,7 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Repository
 public class RimborsoSpeseRepository {
@@ -21,7 +24,7 @@ public class RimborsoSpeseRepository {
 
     private final RowMapper<RimborsoSpese> rimborsoRowMapper = (rs, rowNum) -> new RimborsoSpese(
             rs.getInt("IdRimborso"),
-            rs.getObject("Approvato", Boolean.class), 
+            rs.getObject("Approvato", Boolean.class),
             rs.getDate("Data").toLocalDate(),
             rs.getDouble("Importo"),
             rs.getInt("IdComunicazione"),
@@ -65,4 +68,41 @@ public class RimborsoSpeseRepository {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Errore nei dati inviati");
         }
     }
+
+    public ResponseEntity<Map<String, Object>> getStatisticheRimborsi() {
+        try {
+            // Statistiche globali: numero e valore medio rimborsi approvati
+            String sqlGlobale = """
+                        SELECT
+                            COUNT(*) AS numero_totale,
+                            AVG(Importo) AS valore_medio
+                        FROM RimborsoSpese
+                        WHERE Approvato = TRUE
+                    """;
+            Map<String, Object> statsGlobali = jdbc.queryForMap(sqlGlobale);
+
+            String sqlMensile = """
+                        SELECT
+                            DATE_TRUNC('month', Data) AS mese,
+                            COUNT(*) AS numero_rimborsi,
+                            AVG(Importo) AS valore_medio
+                        FROM RimborsoSpese
+                        WHERE Approvato = TRUE
+                        GROUP BY mese
+                        ORDER BY mese
+                    """;
+            List<Map<String, Object>> andamentoMensile = jdbc.queryForList(sqlMensile);
+
+            Map<String, Object> response = Map.of(
+                    "statisticheGlobali", statsGlobali,
+                    "andamentoMensile", andamentoMensile);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

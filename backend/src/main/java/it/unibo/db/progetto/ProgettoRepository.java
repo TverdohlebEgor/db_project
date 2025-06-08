@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.sql.Date;
@@ -79,6 +78,23 @@ public class ProgettoRepository {
 
         jdbc.update("UPDATE Progetto SET Concluso = ? WHERE IdProgetto = ?", concluso, idProgetto);
         return ResponseEntity.ok().build();
+    }
+
+    public ResponseEntity<List<Map<String, Object>>> statisticheProgetti() {
+        String sql = """
+                    SELECT
+                        p.IdProgetto,
+                        p.NomeProgetto,
+                        SUM(EXTRACT(EPOCH FROM (e.OraFine - e.OraInizio)) / 3600) AS oreTotali
+                    FROM Evento e
+                    JOIN Progetto p ON e.IdProgetto = p.IdProgetto
+                    WHERE e.Tipo = 'Lavoro'
+                    GROUP BY p.IdProgetto, p.NomeProgetto
+                    ORDER BY oreTotali DESC
+                """;
+
+        List<Map<String, Object>> result = jdbc.queryForList(sql);
+        return ResponseEntity.ok(result);
     }
 
 }

@@ -12,6 +12,9 @@ function NavigationBar() {
             <Nav.Link as={Link} to="/progetti">Progetti</Nav.Link>
             <Nav.Link as={Link} to="/forum">Forum</Nav.Link>
             <Nav.Link as={Link} to="/rimborsi">Rimborsi</Nav.Link>
+            <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
+            <Nav.Link as={Link} to="/calendarioManager">Calendario Personale</Nav.Link>
+
 
           </Nav>
         </Navbar.Collapse>

@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequiredArgsConstructor
@@ -262,4 +261,27 @@ public class MainController {
   public ResponseEntity<Utente> getUtenteById(@RequestBody Map<String, Integer> body) {
     return utente.getUtenteById(body);
   }
+
+  @GetMapping("/dashboardStatistiche")
+  public ResponseEntity<Map<String, Object>> getDashboardStatistiche() {
+    return evento.getDashboardStatistiche();
+  }
+
+  @GetMapping("/statisticheProgetti")
+  public ResponseEntity<List<Map<String, Object>>> statisticheProgetti() {
+    return progetto.statisticheProgetti();
+  }
+
+  @GetMapping("/statisticheFerieAccumulate")
+  public ResponseEntity<List<Utente>> getStatisticheFerieAccumulate() {
+
+    return utente.getStatisticheFerieAccumulate();
+  }
+
+  @GetMapping("/statisticheRimborsi")
+  public ResponseEntity<Map<String, Object>> getStatisticheRimborsi() {
+
+    return rimborsoSpese.getStatisticheRimborsi();
+  }
+
 }

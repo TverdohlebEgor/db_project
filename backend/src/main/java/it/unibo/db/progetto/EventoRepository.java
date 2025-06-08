@@ -3,6 +3,7 @@ package it.unibo.db.progetto;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,4 +78,40 @@ public class EventoRepository {
                     .body("Errore nell'aggiornamento: " + e.getMessage());
         }
     }
+
+    public ResponseEntity<Map<String, Object>> getDashboardStatistiche() {
+        Map<String, Object> statistiche = new HashMap<>();
+
+        String perTipoSql = """
+                    SELECT Tipo, COUNT(*) AS conteggio
+                    FROM Evento
+                    GROUP BY Tipo
+                """;
+        statistiche.put("perTipo", jdbc.queryForList(perTipoSql));
+
+        String ferieMedieSql = """
+                    SELECT AVG(giorni) AS ferieMedie
+                    FROM (
+                        SELECT COUNT(*) AS giorni
+                        FROM Evento
+                        WHERE Tipo = 'Ferie'
+                        GROUP BY IdUtente
+                    ) AS sub
+                """;
+        Double ferieMedie = jdbc.queryForObject(ferieMedieSql, Double.class);
+        statistiche.put("ferieMedie", ferieMedie);
+
+        String permessiUtenteSql = """
+                    SELECT u.Nome, u.Cognome, COUNT(*) AS numeroPermessi
+                    FROM Evento e
+                    JOIN Utente u ON e.IdUtente = u.IdUtente
+                    WHERE e.Tipo = 'Permesso'
+                    GROUP BY u.Nome, u.Cognome
+                    ORDER BY numeroPermessi DESC
+                """;
+        statistiche.put("permessiUtente", jdbc.queryForList(permessiUtenteSql));
+
+        return ResponseEntity.ok(statistiche);
+    }
+
 }
