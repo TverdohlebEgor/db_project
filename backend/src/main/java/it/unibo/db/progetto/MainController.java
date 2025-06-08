@@ -46,12 +46,12 @@ public class MainController {
   }
 
   @PostMapping("/add/valuta")
-  public ResponseEntity<Boolean> addValuta(@RequestBody Map<String, String> body){
+  public ResponseEntity<Boolean> addValuta(@RequestBody Map<String, String> body) {
     return utente.addValuta(body);
   }
 
   @PostMapping("/update/eventi")
-  public ResponseEntity<Boolean> updateEventi(@RequestBody Map<String, String> body){
+  public ResponseEntity<Boolean> updateEventi(@RequestBody Map<String, String> body) {
     return utente.updateEventi(body);
   }
 
@@ -102,11 +102,11 @@ public class MainController {
   public ResponseEntity<Utente> loginUser(@RequestBody Map<String, String> body) {
     return utente.login(body);
   }
+
   @PostMapping("/amministratore/login")
   public ResponseEntity<Amministratore> logiAmministratore(@RequestBody Map<String, String> body) {
     return utente.amministratoreLogin(body);
   }
-
 
   @PostMapping(value = "/add/event", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addEvent(
@@ -301,6 +301,11 @@ public class MainController {
   public ResponseEntity<?> aggiornaFerie(@RequestBody Map<String, Integer> body) {
 
     return utente.aggiornaFerie(body);
+  }
+
+  @PostMapping("/getEventiNonApprovati")
+  public ResponseEntity<List<Evento>> getEventiNonApprovati(@RequestBody Map<String, Integer> body) {
+    return evento.getEventiNonApprovati(body);
   }
 
 }

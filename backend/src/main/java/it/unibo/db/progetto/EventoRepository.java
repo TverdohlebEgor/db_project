@@ -118,4 +118,31 @@ public class EventoRepository {
         return ResponseEntity.ok(statistiche);
     }
 
+    public ResponseEntity<List<Evento>> getEventiNonApprovati(@RequestBody Map<String, Integer> body) {
+        Integer idDipendente = body.get("idDipendente");
+        if (idDipendente == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String sql = """
+                    SELECT
+                        e.IdEvento,
+                        e.Approvato,
+                        e.Data,
+                        e.Tipo,
+                        e.Straordinario,
+                        e.OraInizio,
+                        e.OraFine,
+                        e.IdUtente,
+                        e.IdProgetto,
+                        e.IdComunicazione
+                    FROM Evento e
+                    LEFT JOIN Progetto p ON e.IdProgetto = p.IdProgetto
+                    LEFT JOIN Comunicazione c ON e.IdComunicazione = c.IdComunicazione
+                    WHERE e.IdUtente = ? AND e.Approvato IS NULL
+                """;
+
+        return ResponseEntity.ok(jdbc.query(sql, eventoRowMapper, idDipendente));
+    }
+
 }
