@@ -45,6 +45,12 @@ public class MainController {
     return utente.getAllValute();
   }
 
+  @PostMapping("/add/valuta")
+  public ResponseEntity<Boolean> addValuta(@RequestBody Map<String, String> body){
+    System.out.println(body);
+    return utente.addValuta(body);
+  }
+
   @GetMapping("/get/evento/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
   public List<EventoDisplay> getEventiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getEventiDipendentne(date, idDipendente);
@@ -90,10 +96,13 @@ public class MainController {
 
   @PostMapping("/login")
   public ResponseEntity<Utente> loginUser(@RequestBody Map<String, String> body) {
-
     return utente.login(body);
-
   }
+  @PostMapping("/amministratore/login")
+  public ResponseEntity<Amministratore> logiAmministratore(@RequestBody Map<String, String> body) {
+    return utente.amministratoreLogin(body);
+  }
+
 
   @PostMapping(value = "/add/event", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addEvent(

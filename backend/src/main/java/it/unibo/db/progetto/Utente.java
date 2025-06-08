@@ -18,7 +18,8 @@ public record Utente (
 
 enum TipoUtente {
 	DIPENDENTE,
-	MANAGER
+	MANAGER,
+	AMMINISTRATORE
 }
 
 

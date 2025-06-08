@@ -28,6 +28,11 @@ public class UtenteRepository {
         this.jdbc = jdbc;
     }
 
+    private final RowMapper<Amministratore> amministratoreRowMapper = (rs, rowNum) -> new Amministratore(
+                rs.getInt("idAmministratore"),
+                rs.getString("email"),
+                rs.getString("password"));
+
     private final RowMapper<Utente> utenteRowMapper = (rs, rowNum) -> new Utente(
             rs.getInt("IdUtente"),
             TipoUtente.valueOf(rs.getString("Tipo").toUpperCase()),
@@ -121,6 +126,19 @@ public class UtenteRepository {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+    public ResponseEntity<Amministratore> amministratoreLogin(Map<String, String> body) {
+        String email = body.get("email");
+        String password = body.get("password");
+
+        try {
+            Amministratore user = jdbc.queryForObject(
+                    "SELECT * FROM Amministratore WHERE Email = ? AND Password = ?",
+                    amministratoreRowMapper, email, password);
+            return ResponseEntity.ok(user);
+        } catch (EmptyResultDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
 
     public ResponseEntity<List<Utente>> findEmployeesOfManager(Map<String, String> body) {
 
@@ -147,6 +165,20 @@ public class UtenteRepository {
 
         }
 
+    }
+    public ResponseEntity<Boolean> addValuta(Map<String, String> body) {
+        try {
+            jdbc.update("INSERT INTO VALUTA (idAmministratore,nome,simbolo) VALUES (?,?,?)",
+                    Integer.valueOf(body.get("id")),
+                    body.get("code"),
+                    body.get("symbol")
+            );
+            return ResponseEntity.ok(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        }
     }
 
     public ResponseEntity<String> removeEmployeeFromManager(Map<String, String> body) {
