@@ -1,6 +1,5 @@
-// EventModal.jsx
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstrap'; // Added Spinner
+import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstrap';
 
 const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   console.log(idDipendente);
@@ -9,43 +8,40 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [isOvertime, setIsOvertime] = useState(false);
   const [hourStart, setHourStart] = useState('');
   const [hourEnd, setHourEnd] = useState('');
-  const [message, setMessage] = useState(''); // New state for message
-  const [selectedImages, setSelectedImages] = useState([]); // New state for selected image files
-  const [selectedProject, setSelectedProject] = useState(''); // New state for selected project
+  const [message, setMessage] = useState('');
+  const [selectedImages, setSelectedImages] = useState([]); 
+  const [selectedProject, setSelectedProject] = useState(''); 
 
-  // States for fetching daily work data (for the 'Hours of Work' tab)
   const [dailyWorkData, setDailyWorkData] = useState(null);
   const [isLoadingDailyData, setIsLoadingDailyData] = useState(false);
   const [dailyDataError, setDailyDataError] = useState(null);
 
-  // States for fetching projects list
   const [projectsList, setProjectsList] = useState([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [projectsError, setProjectsError] = useState(null);
 
-  // Effect to reset form fields and clear fetched data when modal opens or selectedDate changes
+
   useEffect(() => {
     if (show) {
-      setKey('hours'); // Default to hours tab when opening
+      setKey('hours'); 
       setEventType('Work');
       setIsOvertime(false);
       setHourStart('');
       setHourEnd('');
       setMessage('');
       setSelectedImages([]);
-      setSelectedProject(''); // Reset selected project
+      setSelectedProject(''); 
       setDailyWorkData(null);
       setDailyDataError(null);
-      setProjectsList([]); // Clear projects list
+      setProjectsList([]); 
       setProjectsError(null);
     }
   }, [show, selectedDate]);
 
-  // Effect to reset overtime if eventType changes to non-Work
   useEffect(() => {
     if (eventType !== 'Work') {
       setIsOvertime(false);
-      setHourStart(''); // Also clear hours if not work
+      setHourStart(''); 
       setHourEnd('');
     }
   }, [eventType]);
