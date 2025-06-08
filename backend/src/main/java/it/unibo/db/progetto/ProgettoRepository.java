@@ -88,7 +88,7 @@ public class ProgettoRepository {
                         SUM(EXTRACT(EPOCH FROM (e.OraFine - e.OraInizio)) / 3600) AS oreTotali
                     FROM Evento e
                     JOIN Progetto p ON e.IdProgetto = p.IdProgetto
-                    WHERE e.Tipo = 'Lavoro'
+                    WHERE e.Tipo = 'Lavoro' AND e.Approvato = TRUE
                     GROUP BY p.IdProgetto, p.NomeProgetto
                     ORDER BY oreTotali DESC
                 """;

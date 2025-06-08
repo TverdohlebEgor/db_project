@@ -284,4 +284,10 @@ public class MainController {
     return rimborsoSpese.getStatisticheRimborsi();
   }
 
+  @PostMapping("/aggiornaFerie")
+  public ResponseEntity<?> aggiornaFerie(@RequestBody Map<String, Integer> body) {
+
+    return utente.aggiornaFerie(body);
+  }
+
 }

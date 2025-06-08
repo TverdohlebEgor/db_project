@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Objects;
 import java.sql.PreparedStatement;
@@ -460,13 +462,69 @@ public class UtenteRepository {
 
     public ResponseEntity<List<Utente>> getStatisticheFerieAccumulate() {
         String sql = """
-                    SELECT * FROM Utente
-                    WHERE FerieAccumulate > 30
+                    SELECT *
+                    FROM Utente
+                    WHERE FerieAccumulate > 30 * 24 * 60
                     ORDER BY FerieAccumulate DESC
                 """;
 
         List<Utente> utenti = jdbc.query(sql, utenteRowMapper);
         return ResponseEntity.ok(utenti);
+    }
+
+    public ResponseEntity<?> aggiornaFerie(@RequestBody Map<String, Integer> body) {
+        try {
+
+            int idEvento = body.get("idEvento");
+
+            String sqlEvento = """
+                        SELECT Tipo, Approvato, OraInizio, OraFine, IdUtente
+                        FROM Evento
+                        WHERE IdEvento = ?
+                    """;
+
+            Map<String, Object> evento = jdbc.queryForMap(sqlEvento, idEvento);
+
+            if (!Boolean.TRUE.equals(evento.get("Approvato"))) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Evento non approvato.");
+            }
+
+            if (!"Lavoro".equalsIgnoreCase((String) evento.get("Tipo"))) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Evento non di lavoro");
+
+            }
+
+            Time inizio = (Time) evento.get("OraInizio");
+            Time fine = (Time) evento.get("OraFine");
+
+            long minutiLavorati = (fine.getTime() - inizio.getTime()) / (1000 * 60);
+
+            if (minutiLavorati <= 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Durata evento non valida.");
+            }
+
+            double moltiplicatore = 0.1;
+            int minutiFerie = (int) Math.round(minutiLavorati * moltiplicatore);
+
+            int idUtente = (int) evento.get("IdUtente");
+
+            String sqlUpdate = """
+                        UPDATE Utente
+                        SET FerieAccumulate = FerieAccumulate + ?
+                        WHERE IdUtente = ?
+                    """;
+
+            jdbc.update(sqlUpdate, minutiFerie, idUtente);
+
+            return ResponseEntity.ok("Ferie aggiornate con successo: +" + minutiFerie + " minuti");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Errore nel calcolo ferie: " + e.getMessage());
+        }
     }
 
 }

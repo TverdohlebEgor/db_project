@@ -84,7 +84,7 @@ public class EventoRepository {
 
         String perTipoSql = """
                     SELECT Tipo, COUNT(*) AS conteggio
-                    FROM Evento
+                    FROM Evento WHERE Approvato = TRUE
                     GROUP BY Tipo
                 """;
         statistiche.put("perTipo", jdbc.queryForList(perTipoSql));
@@ -95,10 +95,13 @@ public class EventoRepository {
                         SELECT COUNT(*) AS giorni
                         FROM Evento
                         WHERE Tipo = 'Ferie'
+                        AND Approvato = TRUE
                         GROUP BY IdUtente
                     ) AS sub
                 """;
         Double ferieMedie = jdbc.queryForObject(ferieMedieSql, Double.class);
+        if (ferieMedie == null)
+            ferieMedie = 0.0;
         statistiche.put("ferieMedie", ferieMedie);
 
         String permessiUtenteSql = """
@@ -106,6 +109,7 @@ public class EventoRepository {
                     FROM Evento e
                     JOIN Utente u ON e.IdUtente = u.IdUtente
                     WHERE e.Tipo = 'Permesso'
+                    AND e.Approvato = TRUE
                     GROUP BY u.Nome, u.Cognome
                     ORDER BY numeroPermessi DESC
                 """;

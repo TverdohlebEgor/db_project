@@ -10,6 +10,7 @@ import CalendarioDipendente from './dipendenti/CalendarioDipendente/CalendarioDi
 import ForumManager from './forum/ForumManager';
 import Dashboard from './dashboard/DashBoard';
 import Calendar from '../dipendente/Calendario';
+import Rimborsi from '../dipendente/Rimborsi';
 
 function Manager({ manager }) {
     return (
@@ -22,6 +23,7 @@ function Manager({ manager }) {
                 <Route path="/rimborsi" element={<GestioneRimborsi manager={manager} />} />
                 <Route path="/dashboard" element={<Dashboard manager={manager} />} />
                 <Route path="/calendarioManager" element={<Calendar dipendente={manager} />} />
+                <Route path="/richiesteRimborsiManager" element={<Rimborsi dipendente={manager} />} />
 
 
 

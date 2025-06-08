@@ -51,13 +51,13 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   }, [eventType]);
 
 
-  const handleApproval = async (eventId, approve) => {
-    const approveStr = approve ? "t" : "f";  // Trasformo in stringa coerente con backend
+  const handleApproval = async (eventId, approve, eventType) => {
+
     try {
       const response = await fetch(`http://localhost:8080/api/updateApprovazione`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idEvento: eventId, approvato: approveStr })  // Invio "t" o "f"
+        body: JSON.stringify({ idEvento: eventId, approvato: approve })
       });
 
       if (!response.ok) {
@@ -65,6 +65,24 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         throw new Error(`Errore approvazione: ${response.status}. Messaggio: ${errorText}`);
       }
 
+      console.log(eventType)
+      if (approve && eventType == "LAVORO") {
+
+
+        const ferieResponse = await fetch('http://localhost:8080/api/aggiornaFerie', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idEvento: eventId })
+        });
+
+        if (!ferieResponse.ok) {
+          const msg = await ferieResponse.text();
+          throw new Error(`Errore aggiornamento ferie: ${ferieResponse.status} - ${msg}`);
+        }
+
+      }
+
+      const approveStr = approve ? "t" : "f"
       setDailyWorkData(prev =>
         prev.map(ev =>
           ev.IdEvento === eventId ? { ...ev, approvato: approveStr } : ev  // Aggiorno con stringa
@@ -158,7 +176,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
     // For sending files, you typically use FormData
     const formData = new FormData();
-    formData.append('date', selectedDate ? selectedDate.toISOString().split('T')[0] : '');
+    formData.append('date', selectedDate ? `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}` : '');
     formData.append('type', eventType);
     formData.append('overtime', isOvertime);
     formData.append('hourStart', hourStart);
@@ -273,7 +291,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                           &times;
                         </button>
 
-                        {/* Conditional rendering based on event.tipo */}
                         {event.tipo === 'LAVORO' ? (
                           <>
                             {/* Display full details for 'LAVORO' type */}
@@ -293,16 +310,16 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                               <Button
                                 variant="success"
                                 size="sm"
-                                onClick={() => handleApproval(event.IdEvento, true)}
-                                disabled={false}
+                                onClick={() => handleApproval(event.IdEvento, true, event.tipo)}
+                                disabled={event.approvato !== null}
                               >
                                 Approva
                               </Button>
                               <Button
                                 variant="danger"
                                 size="sm"
-                                onClick={() => handleApproval(event.IdEvento, false)}
-                                disabled={false}
+                                onClick={() => handleApproval(event.IdEvento, false, event.tipo)}
+                                disabled={event.approvato !== null}
                               >
                                 Rifiuta
                               </Button>
@@ -323,16 +340,16 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                               <Button
                                 variant="success"
                                 size="sm"
-                                onClick={() => handleApproval(event.IdEvento, true)}
-                                disabled={false}
+                                onClick={() => handleApproval(event.IdEvento, true, event.tipo)}
+                                disabled={event.approvato !== null}
                               >
                                 Approva
                               </Button>
                               <Button
                                 variant="danger"
                                 size="sm"
-                                onClick={() => handleApproval(event.IdEvento, false)}
-                                disabled={false}
+                                onClick={() => handleApproval(event.IdEvento, false, event.tipo)}
+                                disabled={event.approvato !== null}
                               >
                                 Rifiuta
                               </Button>
