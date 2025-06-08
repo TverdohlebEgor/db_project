@@ -6,7 +6,7 @@ CREATE TABLE Amministratore (
 
 CREATE TABLE Utente (
     IdUtente  SERIAL PRIMARY KEY,
-    Tipo VARCHAR(10) NOT NULL CHECK(Tipo IN ('Dipendente', 'Manager')),
+    Tipo VARCHAR(14) NOT NULL CHECK(Tipo IN ('Dipendente', 'Manager','Amministratore')),
     Nome VARCHAR(100) NOT NULL,
     Cognome VARCHAR(100) NOT NULL,
     Email VARCHAR(100) UNIQUE NOT NULL,

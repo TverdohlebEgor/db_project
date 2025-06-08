@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import Manager from './manager/Manager';
 import Dipendente from './dipendente/Dipendente';
+import Amministratore from './amministratore/Amministratore';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [data,setData] = useState('')
+  const [amministratoreData,setAmministratoreData] = useState('')
+  const [isAmministratore,setIsAmministratore] = useState(false)
 
 
 
@@ -15,6 +18,7 @@ function LoginForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     fetchUsers();
+    fetchAmministratore();
   };
 
 
@@ -37,13 +41,34 @@ function LoginForm() {
     }
   };
 
+  const fetchAmministratore = async () => {
+      try {
+                  const response = await fetch('http://localhost:8080/api/amministratore/login', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                  });
+
+                  const data = await response.json();
+                  setAmministratoreData(data);
+                  setIsAmministratore(true);
+
+                } catch (err) {
+                  setMessage("Errore email o password errati")
+                }
+      }
+
   if (data.tipo === 'MANAGER') {
     return <Manager manager={data}/>;
   }
-
-  if (data.tipo === 'DIPENDENTE') {
+  else if (data.tipo === 'DIPENDENTE') {
     return <Dipendente dipendente = {data}/>;
   }
+  else if (isAmministratore === true){
+      return <Amministratore amministratore = {amministratoreData}/>;
+    }
 
   return (
     <div>
