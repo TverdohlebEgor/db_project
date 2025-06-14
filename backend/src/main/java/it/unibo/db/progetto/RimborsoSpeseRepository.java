@@ -8,10 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @Repository
 public class RimborsoSpeseRepository {
@@ -71,25 +68,29 @@ public class RimborsoSpeseRepository {
 
     public ResponseEntity<Map<String, Object>> getStatisticheRimborsi() {
         try {
-            // Statistiche globali: numero e valore medio rimborsi approvati
             String sqlGlobale = """
                         SELECT
+                            v.Nome AS valuta,
                             COUNT(*) AS numero_totale,
-                            AVG(Importo) AS valore_medio
-                        FROM RimborsoSpese
-                        WHERE Approvato = TRUE
+                            AVG(r.Importo) AS valore_medio
+                        FROM RimborsoSpese r
+                        JOIN Valuta v ON r.IdValuta = v.IdValuta
+                        WHERE r.Approvato = TRUE
+                        GROUP BY valuta
                     """;
-            Map<String, Object> statsGlobali = jdbc.queryForMap(sqlGlobale);
+            List<Map<String, Object>> statsGlobali = jdbc.queryForList(sqlGlobale);
 
             String sqlMensile = """
                         SELECT
-                            DATE_TRUNC('month', Data) AS mese,
+                            DATE_TRUNC('month', r.Data) AS mese,
+                            v.Nome AS valuta,
                             COUNT(*) AS numero_rimborsi,
-                            AVG(Importo) AS valore_medio
-                        FROM RimborsoSpese
-                        WHERE Approvato = TRUE
-                        GROUP BY mese
-                        ORDER BY mese
+                            AVG(r.Importo) AS valore_medio
+                        FROM RimborsoSpese r
+                        JOIN Valuta v ON r.IdValuta = v.IdValuta
+                        WHERE r.Approvato = TRUE
+                        GROUP BY valuta, mese
+                        ORDER BY mese, valuta
                     """;
             List<Map<String, Object>> andamentoMensile = jdbc.queryForList(sqlMensile);
 
@@ -98,11 +99,9 @@ public class RimborsoSpeseRepository {
                     "andamentoMensile", andamentoMensile);
 
             return ResponseEntity.ok(response);
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }

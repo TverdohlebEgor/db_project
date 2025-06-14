@@ -17,7 +17,6 @@ function Comunicazione({ comunicazione }) {
         });
         if (response.ok) {
           const count = await response.json();
-          console.log(count)
           setVisualizzazioni(count);
         }
       } catch (error) {

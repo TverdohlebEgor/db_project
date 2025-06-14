@@ -12,11 +12,16 @@ function LoginForm() {
   const [amministratoreData,setAmministratoreData] = useState('')
   const [isAmministratore,setIsAmministratore] = useState(false)
 
+
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
     updateEventi();
     fetchUsers();
     fetchAmministratore();
+    setMessage("Errore email o password errati")
+
   };
 
   const updateEventi = async () => {
@@ -54,40 +59,42 @@ function LoginForm() {
 
       setData(data)
     } catch (err) {
-      setMessage("Errore email o password errati")
+      console.log(err)
 
     }
   };
 
   const fetchAmministratore = async () => {
-      try {
-                  const response = await fetch('http://localhost:8080/api/amministratore/login', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                  });
+    try {
+      const response = await fetch('http://localhost:8080/api/amministratore/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-                  const data = await response.json();
-                  setAmministratoreData(data);
-                  if(response.ok && data !== null){
-                      setIsAmministratore(true);
-                  }
-                } catch (err) {
-                    console.log(err)
-                  setMessage("Errore email o password errati")
-                }
+      const data = await response.json();
+      setAmministratoreData(data);
+      if (response.ok && data !== null) {
+        setIsAmministratore(true);
       }
+    } catch (err) {
+      console.log(err)
+    }
+  }
   if (data.tipo === 'MANAGER') {
-    return <Manager manager={data}/>;
+    return <Manager manager={data} />;
   }
   else if (data.tipo === 'DIPENDENTE') {
-    return <Dipendente dipendente = {data}/>;
+    return <Dipendente dipendente={data} />;
   }
-  else if (isAmministratore === true){
-      return <Amministratore amministratore = {amministratoreData}/>;
-    }
+  else if (isAmministratore === true) {
+    return <Amministratore amministratore={amministratoreData} />;
+  }
+
+
+
 
   return (
     <div>

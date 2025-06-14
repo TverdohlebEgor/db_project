@@ -52,29 +52,13 @@ function StatisticheRimborsi() {
       </div>
     );
 
-  // Preparo dati per il grafico
-  const labels = andamentoMensile.map((item) =>
-    new Date(item.mese).toLocaleDateString("it-IT", { year: "numeric", month: "short" })
-  );
-  const numeroRimborsiData = andamentoMensile.map((item) => item.numero_rimborsi);
-  const valoreMedioData = andamentoMensile.map((item) => parseFloat(item.valore_medio));
-
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: "Numero Rimborsi",
-        data: numeroRimborsiData,
-        backgroundColor: "rgba(0, 116, 194, 0.7)",
-      },
-      {
-        label: "Valore Medio (€)",
-        data: valoreMedioData,
-        backgroundColor: "rgb(255, 0, 55)",
-        yAxisID: "y1",
-      },
-    ],
-  };
+  // Raggruppa i dati per valuta
+  const groupedByValuta = andamentoMensile.reduce((acc, curr) => {
+    const valuta = curr.valuta;
+    if (!acc[valuta]) acc[valuta] = [];
+    acc[valuta].push(curr);
+    return acc;
+  }, {});
 
   const chartOptions = {
     responsive: true,
@@ -101,7 +85,7 @@ function StatisticheRimborsi() {
         },
         title: {
           display: true,
-          text: "Valore Medio (€)",
+          text: "Valore Medio",
         },
       },
     },
@@ -109,30 +93,56 @@ function StatisticheRimborsi() {
 
   return (
     <div className="container mt-4">
-      <h3 className="mb-4">Andamento Rimborsi Approvati (per mese)</h3>
+      <h3 className="mb-4">Andamento Rimborsi Approvati (per mese e valuta)</h3>
 
-      <div className="card shadow-sm p-3 mb-4">
-        <Bar data={chartData} options={chartOptions} />
-      </div>
+      {Object.entries(groupedByValuta).map(([valuta, records]) => {
+        const labels = records.map(item =>
+          new Date(item.mese).toLocaleDateString("it-IT", {
+            year: "numeric",
+            month: "short",
+          })
+        );
+        const numeroRimborsiData = records.map(item => item.numero_rimborsi);
+        const valoreMedioData = records.map(item => parseFloat(item.valore_medio));
 
-      <div className="card shadow-sm p-3">
-        <table className="table table-hover align-middle">
-          <thead className="table-light">
-            <tr>
-              <th>Mese</th>
-              <th>Numero Rimborsi</th>
-              <th>Valore Medio (€)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {andamentoMensile.length === 0 ? (
+        const chartData = {
+          labels,
+          datasets: [
+            {
+              label: `N. Rimborsi (${valuta})`,
+              data: numeroRimborsiData,
+              backgroundColor: "rgba(0, 116, 194, 0.7)",
+            },
+            {
+              label: `Valore Medio (${valuta})`,
+              data: valoreMedioData,
+              backgroundColor: "rgba(0, 200, 100, 0.6)",
+              yAxisID: "y1",
+            },
+          ],
+        };
+
+        return (
+          <div key={valuta} className="card shadow-sm p-3 mb-4">
+            <h5 className="mb-3">Andamento per valuta: {valuta}</h5>
+            <Bar data={chartData} options={chartOptions} />
+          </div>
+        );
+      })}
+
+      {Object.entries(groupedByValuta).map(([valuta, records]) => (
+        <div key={valuta} className="card shadow-sm p-3 mb-4">
+          <h5 className="mb-3">Dettaglio Mensile – {valuta}</h5>
+          <table className="table table-hover align-middle">
+            <thead className="table-light">
               <tr>
-                <td colSpan="3" className="text-center py-4">
-                  Nessun dato disponibile
-                </td>
+                <th>Mese</th>
+                <th>Numero Rimborsi</th>
+                <th>Valore Medio ({valuta})</th>
               </tr>
-            ) : (
-              andamentoMensile.map((item, i) => {
+            </thead>
+            <tbody>
+              {records.map((item, i) => {
                 const mese = new Date(item.mese).toLocaleDateString("it-IT", {
                   year: "numeric",
                   month: "long",
@@ -141,20 +151,22 @@ function StatisticheRimborsi() {
                   <tr key={i}>
                     <td>{mese}</td>
                     <td>
-                      <span className="badge bg-primary fs-6">{item.numero_rimborsi}</span>
+                      <span className="badge bg-primary fs-6">
+                        {item.numero_rimborsi}
+                      </span>
                     </td>
                     <td>
                       <span className="badge bg-success fs-6">
-                        € {parseFloat(item.valore_medio).toFixed(2)}
+                        {parseFloat(item.valore_medio).toFixed(2)} {valuta}
                       </span>
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+              })}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>
   );
 }
