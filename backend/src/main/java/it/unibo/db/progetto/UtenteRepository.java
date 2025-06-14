@@ -59,12 +59,18 @@ public class UtenteRepository {
             rs.getString("nome"),
             rs.getString("simbolo"));
 
-    private final RowMapper<RimborsoSpeseDisplay> rimborsoSpeseRowMapper = (rs, rowNum) -> new RimborsoSpeseDisplay(
-            rs.getInt("idRimborso"),
-            rs.getBoolean("approvato"),
-            rs.getDouble("importo"),
-            rs.getString("testo"),
-            rs.getString("nome"));
+    private final RowMapper<RimborsoSpeseDisplay> rimborsoSpeseRowMapper = (rs, rowNum) -> {
+        boolean approvatoPrimitive = rs.getBoolean("approvato");
+        Boolean approvato = rs.wasNull() ? null : approvatoPrimitive;
+
+        return new RimborsoSpeseDisplay(
+                rs.getInt("idRimborso"),
+                approvato, // Use the Boolean object that can be null
+                rs.getDouble("importo"),
+                rs.getString("testo"),
+                rs.getString("nome")
+        );
+    };
 
     private final RowMapper<Evento> eventoRowMapper = (rs, rowNum) -> new Evento(
             rs.getInt("IdEvento"),
@@ -196,7 +202,6 @@ public class UtenteRepository {
             System.err.println("Unexpected error: " + e.getMessage());
             return ResponseEntity.internalServerError().body(false);
         }
-        System.out.println("Here:" + sqlDateParam);
         jdbc.update("UPDATE Evento SET Approvato = TRUE WHERE (Data + INTERVAL '14 days') > (CAST(? AS DATE))",
                 sqlDateParam);
         return ResponseEntity.ok(true);
