@@ -1,18 +1,18 @@
 CREATE TABLE Amministratore (
     IdAmministratore SERIAL   PRIMARY KEY ,
-    Email VARCHAR(100) UNIQUE NOT NULL,
-    Password VARCHAR(100) NOT NULL
+    Email VARCHAR(40) UNIQUE NOT NULL,
+    Password VARCHAR(30) NOT NULL
 );
 
 CREATE TABLE Utente (
     IdUtente  SERIAL PRIMARY KEY,
     Tipo VARCHAR(14) NOT NULL CHECK(Tipo IN ('Dipendente', 'Manager','Amministratore')),
-    Nome VARCHAR(100) NOT NULL,
-    Cognome VARCHAR(100) NOT NULL,
-    Email VARCHAR(100) UNIQUE NOT NULL,
-    Password VARCHAR(100) NOT NULL,
+    Nome VARCHAR(20) NOT NULL,
+    Cognome VARCHAR(20) NOT NULL,
+    Email VARCHAR(40) UNIQUE NOT NULL,
+    Password VARCHAR(30) NOT NULL,
     DataDiNascita DATE NOT NULL ,
-    Residenza VARCHAR(255) NOT NULL,
+    Residenza VARCHAR(40) NOT NULL,
     RAL DECIMAL(10,2) NOT NULL,
     DataDiAssunzione DATE NOT NULL,
     TipoDiContratto VARCHAR(13) NOT NULL CHECK(TipoDiContratto IN ('FullTime', 'PartTime','Stage','Apprendistato')),
@@ -22,7 +22,7 @@ CREATE TABLE Utente (
 
 CREATE TABLE Progetto (
     IdProgetto  SERIAL PRIMARY KEY,
-    NomeProgetto VARCHAR(100) NOT NULL,
+    NomeProgetto VARCHAR(50) NOT NULL,
     Concluso BOOLEAN NOT NULL,
     Deadline DATE NOT NULL
 );

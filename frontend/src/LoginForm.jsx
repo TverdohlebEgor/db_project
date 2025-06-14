@@ -8,9 +8,9 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [data,setData] = useState('')
-  const [amministratoreData,setAmministratoreData] = useState('')
-  const [isAmministratore,setIsAmministratore] = useState(false)
+  const [data, setData] = useState('')
+  const [amministratoreData, setAmministratoreData] = useState('')
+  const [isAmministratore, setIsAmministratore] = useState(false)
 
 
 
@@ -20,6 +20,8 @@ function LoginForm() {
     updateEventi();
     fetchUsers();
     fetchAmministratore();
+    setMessage("Errore email o password errati")
+
   };
 
   const updateEventi = async () => {
@@ -29,15 +31,11 @@ function LoginForm() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ date : new Date() })
+        body: JSON.stringify({ date: new Date() })
       });
 
-      const data = await response.json();
-
-      setData(data)
     } catch (err) {
-        console.log(err)
-      setMessage("Errore email o password errati")
+      console.log(err)
 
     }
   };
@@ -57,41 +55,42 @@ function LoginForm() {
 
       setData(data)
     } catch (err) {
-        console.log(err)
-      setMessage("Errore email o password errati")
+      console.log(err)
 
     }
   };
 
   const fetchAmministratore = async () => {
-      try {
-                  const response = await fetch('http://localhost:8080/api/amministratore/login', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                  });
+    try {
+      const response = await fetch('http://localhost:8080/api/amministratore/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
 
-                  const data = await response.json();
-                  setAmministratoreData(data);
-                  if(responde.ok && data !== null){
-                      setIsAmministratore(true);
-                  }
-                } catch (err) {
-                    console.log(err)
-                  setMessage("Errore email o password errati")
-                }
+      const data = await response.json();
+      setAmministratoreData(data);
+      if (response.ok && data !== null) {
+        setIsAmministratore(true);
       }
+    } catch (err) {
+      console.log(err)
+    }
+  }
   if (data.tipo === 'MANAGER') {
-    return <Manager manager={data}/>;
+    return <Manager manager={data} />;
   }
   else if (data.tipo === 'DIPENDENTE') {
-    return <Dipendente dipendente = {data}/>;
+    return <Dipendente dipendente={data} />;
   }
-  else if (isAmministratore === true){
-      return <Amministratore amministratore = {amministratoreData}/>;
-    }
+  else if (isAmministratore === true) {
+    return <Amministratore amministratore={amministratoreData} />;
+  }
+
+
+
 
   return (
     <div>

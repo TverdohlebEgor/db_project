@@ -83,15 +83,21 @@ public class ProgettoRepository {
     public ResponseEntity<List<Map<String, Object>>> statisticheProgetti() {
         String sql = """
                     SELECT
-                        p.IdProgetto,
-                        p.NomeProgetto,
-                        SUM(EXTRACT(EPOCH FROM (e.OraFine - e.OraInizio)) / 3600) AS oreTotali
-                    FROM Evento e
-                    JOIN Progetto p ON e.IdProgetto = p.IdProgetto
-                    WHERE e.Tipo = 'Lavoro' AND e.Approvato = TRUE
-                    GROUP BY p.IdProgetto, p.NomeProgetto
-                    ORDER BY oreTotali DESC
-                """;
+                    p.IdProgetto,
+                    p.NomeProgetto,
+                    SUM(
+                        EXTRACT(EPOCH FROM (
+                            (e.Data + e.OraFine + CASE WHEN e.OraFine < e.OraInizio THEN INTERVAL '1 day' ELSE INTERVAL '0' END)
+                            -
+                            (e.Data + e.OraInizio)
+                        )) / 3600
+                    ) AS oreTotali
+                FROM Evento e
+                JOIN Progetto p ON e.IdProgetto = p.IdProgetto
+                WHERE e.Tipo = 'Lavoro' AND e.Approvato = TRUE
+                GROUP BY p.IdProgetto, p.NomeProgetto
+                ORDER BY oreTotali DESC;
+                                """;
 
         List<Map<String, Object>> result = jdbc.queryForList(sql);
         return ResponseEntity.ok(result);
