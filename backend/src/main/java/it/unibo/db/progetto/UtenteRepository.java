@@ -17,6 +17,8 @@ import java.time.OffsetDateTime;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -145,6 +147,37 @@ public class UtenteRepository {
             return ResponseEntity.ok(user);
         } catch (EmptyResultDataAccessException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    public ResponseEntity<Boolean> addUtente(Map<String, String> body) {
+        try {
+            LocalDate dataDiNascita = LocalDate.parse((String) body.get("dataDiNascita"));
+            LocalDate dataDiAssunzione = LocalDate.parse((String) body.get("dataDiAssunzione"));
+            BigDecimal ral = new BigDecimal(String.valueOf(body.get("ral")));
+            ral = ral.setScale(2, RoundingMode.HALF_UP);
+            System.out.println(ral);
+            String sql = "INSERT INTO Utente (" +
+                    "Tipo, Nome, Cognome, Email, Password, DataDiNascita, Residenza, RAL, DataDiAssunzione, TipoDiContratto, IBAN, FerieAccumulate" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            jdbc.update(sql,
+                    body.get("tipo"),
+                    body.get("nome"),
+                    body.get("cognome"),
+                    body.get("email"),
+                    body.get("password"),
+                    dataDiNascita,
+                    body.get("residenza"),
+                    ral,
+                    dataDiAssunzione,
+                    body.get("tipoDiContratto"),
+                    body.get("iban"),
+                    0.0);
+            return ResponseEntity.ok(true);
+        } catch (java.lang.Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
         }
     }
 

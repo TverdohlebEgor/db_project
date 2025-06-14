@@ -12,9 +12,6 @@ function LoginForm() {
   const [amministratoreData,setAmministratoreData] = useState('')
   const [isAmministratore,setIsAmministratore] = useState(false)
 
-
-
-
   const handleSubmit = (e) => {
     e.preventDefault();
     updateEventi();
@@ -57,7 +54,6 @@ function LoginForm() {
 
       setData(data)
     } catch (err) {
-        console.log(err)
       setMessage("Errore email o password errati")
 
     }
@@ -75,7 +71,7 @@ function LoginForm() {
 
                   const data = await response.json();
                   setAmministratoreData(data);
-                  if(responde.ok && data !== null){
+                  if(response.ok && data !== null){
                       setIsAmministratore(true);
                   }
                 } catch (err) {

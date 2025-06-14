@@ -107,6 +107,11 @@ public class MainController {
   public ResponseEntity<Amministratore> logiAmministratore(@RequestBody Map<String, String> body) {
     return utente.amministratoreLogin(body);
   }
+  @PostMapping("/add/utente")
+  public ResponseEntity<Boolean> addUtente(@RequestBody Map<String, String> body) {
+    return utente.addUtente(body);
+  }
+
 
   @PostMapping(value = "/add/event", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addEvent(
