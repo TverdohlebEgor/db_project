@@ -35,10 +35,7 @@ CREATE TABLE Comunicazione (
     FOREIGN KEY (IdProgetto) REFERENCES Progetto(IdProgetto) ON DELETE CASCADE
 );
 
-CREATE TABLE GiornataDiLavoro (
-    IdGiornata  SERIAL PRIMARY KEY,
-    Data DATE NOT NULL
-);
+
 
 CREATE TABLE Valuta (
     IdValuta  SERIAL PRIMARY KEY,
@@ -106,14 +103,6 @@ CREATE TABLE Coordinare (
     PRIMARY KEY (IdProgetto, IdManager),
     FOREIGN KEY (IdProgetto) REFERENCES Progetto(IdProgetto) ON DELETE CASCADE,
     FOREIGN KEY (IdManager) REFERENCES Utente(IdUtente) ON DELETE CASCADE
-);
-
-CREATE TABLE Formare (
-    IdEvento INT,
-    IdGiornata INT,
-    PRIMARY KEY (IdEvento, IdGiornata),
-    FOREIGN KEY (IdEvento) REFERENCES Evento(IdEvento) ON DELETE CASCADE,
-    FOREIGN KEY (IdGiornata) REFERENCES GiornataDiLavoro(IdGiornata) ON DELETE CASCADE
 );
 
 
