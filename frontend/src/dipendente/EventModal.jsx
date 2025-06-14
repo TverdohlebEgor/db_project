@@ -63,8 +63,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
           }
           const data = await response.json();
-          console.log("Eventi");
-          console.log(data);
           setDailyWorkData(data);
         } catch (err) {
           console.error("Failed to fetch daily work data:", err);

@@ -79,7 +79,6 @@ function LoginForm() {
                   setMessage("Errore email o password errati")
                 }
       }
-
   if (data.tipo === 'MANAGER') {
     return <Manager manager={data}/>;
   }

@@ -42,7 +42,8 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         setIsLoadingReimbursements(true);
         setReimbursementsError(null);
         try {
-          const dateString = selectedDate.toISOString().split('T')[0];
+            const dateString = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
+          //const dateString = selectedDate.toISOString().split('T')[0];
           const response = await fetch(`http://localhost:8080/api/get/rimborsi/${dateString}/${idDipendente}`);
           if (!response.ok) {
             const errorText = await response.text();
@@ -50,7 +51,6 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
           }
           const data = await response.json();
           const approvedRimborsi = data;
-          console.log(data);
           setReimbursementsData(approvedRimborsi);
         } catch (err) {
           setReimbursementsError(`Failed to load reimbursements: ${err.message || 'Network error'}`);
@@ -115,7 +115,7 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
 
     const formData = new FormData();
-    formData.append('date', selectedDate ? selectedDate.toISOString().split('T')[0] : '');
+    formData.append('date', selectedDate ? `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}` : '');
     formData.append('import', parseFloat(reimbursementImport));
     formData.append('message', reimbursementMessage);
     formData.append('idDipendente', idDipendente);
@@ -152,7 +152,6 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   };
 
   const handleDeleteRimborso = async (idToDelete) => {
-    console.log(`Attempting to delete reimbursement with ID: ${idToDelete}`);
     try {
       const response = await fetch(`http://localhost:8080/api/delete/rimborso/${idToDelete}`, {
         method: 'DELETE',
@@ -163,11 +162,9 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         throw new Error(`Failed to delete reimbursement. Server responded with status: ${response.status}. Message: ${errorText}`);
       }
 
-      console.log('Reimbursement deleted successfully:', idToDelete);
       setReimbursementsData(reimbursementsData => reimbursementsData.filter(rimborso => rimborso.idRimborso !== idToDelete));
       alert('Reimbursement deleted successfully!');
     } catch (error) {
-      console.error('Error deleting reimbursement:', error);
       setReimbursementsError(`Failed to delete reimbursement ${idToDelete}: ${error.message || 'Network error'}`);
       alert(`Error deleting reimbursement: ${error.message || 'Please check your network connection and try again.'}`);
     }
@@ -207,7 +204,7 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                              margin: '10px 0',
                              borderRadius: '5px',
                              position: 'relative',
-                             backgroundColor: rimborso.approvato ? '#e6ffe6' : '#ffe6e6'
+                             backgroundColor: rimborso.approvato ? '#e6ffe6' : (rimborso.approvato === null ? 'transparent' : '#ffe6e6')
                            }}
                       >
                         <button
@@ -226,7 +223,7 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                         >
                           &times;
                         </button>
-                        <p><strong>Stato Approvazione:</strong> {rimborso.approvato ? 'Approvato' : 'Pendente'}</p>
+                        <p><strong>Stato Approvazione:</strong> {rimborso.approvato ? 'Approvato' : (rimborso.approvato === null ? 'Pendente' : 'Rifiutato')}</p>
                         <p><strong>Importo:</strong> €{parseFloat(rimborso.importo)?.toFixed(2) ?? 'N/A'}</p>
                         <p><strong>Valuta:</strong> {rimborso.nome}</p>
                         <p><strong>Messaggio:</strong> {rimborso.testo ?? 'Nessun messaggio fornito.'}</p>
