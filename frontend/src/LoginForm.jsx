@@ -36,6 +36,7 @@ function LoginForm() {
 
       setData(data)
     } catch (err) {
+        console.log(err)
       setMessage("Errore email o password errati")
 
     }
@@ -56,6 +57,7 @@ function LoginForm() {
 
       setData(data)
     } catch (err) {
+        console.log(err)
       setMessage("Errore email o password errati")
 
     }
@@ -73,9 +75,11 @@ function LoginForm() {
 
                   const data = await response.json();
                   setAmministratoreData(data);
-                  setIsAmministratore(true);
-
+                  if(responde.ok && data !== null){
+                      setIsAmministratore(true);
+                  }
                 } catch (err) {
+                    console.log(err)
                   setMessage("Errore email o password errati")
                 }
       }
