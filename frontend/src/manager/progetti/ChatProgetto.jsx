@@ -35,7 +35,6 @@ function ChatProgetto({ progetto }) {
             });
 
             if (response.ok) {
-                console.log("Comunicazione inviata con successo");
                 setTesto('');
                 setImmagini([]);
                 setReload(prev => !prev);  // forza reload lista comunicazioni
