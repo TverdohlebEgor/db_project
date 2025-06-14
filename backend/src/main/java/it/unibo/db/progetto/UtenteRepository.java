@@ -380,7 +380,6 @@ public class UtenteRepository {
                 "    IdComunicazione\n" +
                 ")\n" +
                 "VALUES (?,?,?,?,?,?,?,?,?);";
-        String finalType = convertType(type);
         Time finalHourStart = (hourStart == null || hourStart.isEmpty()) ? Time.valueOf("00:00:00")
                 : Time.valueOf(hourStart + ":00");
         Time finalHourEnd = (hourEnd == null || hourEnd.isEmpty()) ? Time.valueOf("23:59:59")
@@ -388,7 +387,7 @@ public class UtenteRepository {
         jdbc.update(addEventoQuery,
                 null,
                 Date.valueOf(date),
-                finalType,
+                type,
                 overtime,
                 finalHourStart,
                 finalHourEnd,
@@ -491,16 +490,6 @@ public class UtenteRepository {
 
     private static String normalizeContratto(String dbValue) {
         return dbValue.toUpperCase().replace(" ", "_");
-    }
-
-    private String convertType(String type) {
-        return switch (type) {
-            case "Work" -> "Lavoro";
-            case "Holiday" -> "Ferie";
-            case "Permission" -> "Permesso";
-            case "Sickness" -> "Malattia";
-            default -> "Lavoro";
-        };
     }
 
     private int insertMessage(String tipo, String message, int idProgetto) {
