@@ -7,18 +7,14 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [isLoadingReimbursements, setIsLoadingReimbursements] = useState(false);
   const [reimbursementsError, setReimbursementsError] = useState(null);
 
-  // Images per rimborso: { idRimborso: [string, string, ...] }
   const [imagesByRimborso, setImagesByRimborso] = useState({});
 
-  // Zoom image modal state
   const [zoomImage, setZoomImage] = useState(null);
 
-  // Form states
   const [reimbursementImport, setReimbursementImport] = useState('');
   const [reimbursementMessage, setReimbursementMessage] = useState('');
   const [selectedImages, setSelectedImages] = useState([]);
 
-  // Currency states
   const [valutaList, setValutaList] = useState([]);
   const [selectedValuta, setSelectedValuta] = useState('');
   const [selectedValutaId, setSelectedValutaId] = useState([]);
@@ -188,12 +184,10 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
   };
 
-  // Apri zoom immagine
   const openZoom = (imgUrl) => {
     setZoomImage(imgUrl);
   };
 
-  // Chiudi zoom immagine
   const closeZoom = () => {
     setZoomImage(null);
   };
@@ -270,7 +264,6 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                             <strong>Messaggio:</strong> {rimborso.testo ?? 'Nessun messaggio fornito.'}
                           </p>
 
-                          {/* Render immagini associate come lista di URL cliccabili */}
                           {imagesByRimborso[rimborso.idRimborso] && imagesByRimborso[rimborso.idRimborso].length > 0 && (
                             <div style={{ marginTop: '10px' }}>
                               <strong>Immagini:</strong>
@@ -369,7 +362,6 @@ const RimborsiModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         </Modal.Body>
       </Modal>
 
-      {/* Modal per zoom immagine */}
       <Modal show={!!zoomImage} onHide={closeZoom} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Zoom Immagine</Modal.Title>

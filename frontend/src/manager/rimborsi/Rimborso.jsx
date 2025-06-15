@@ -8,7 +8,6 @@ function Rimborso({ rimborsoBase, onRimborsoAggiornato }) {
   useEffect(() => {
     async function fetchDettagli() {
       try {
-        // Fetch valuta
         const valutaResp = await fetch("http://localhost:8080/api/valutaById", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -16,7 +15,6 @@ function Rimborso({ rimborsoBase, onRimborsoAggiornato }) {
         });
         const valuta = await valutaResp.json();
 
-        // Fetch comunicazione
         const comResp = await fetch("http://localhost:8080/api/findComunicazioniById", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -25,7 +23,6 @@ function Rimborso({ rimborsoBase, onRimborsoAggiornato }) {
         const comunicazioni = await comResp.json();
         const comunicazione = comunicazioni.length > 0 ? comunicazioni[0] : null;
 
-        // Fetch utente (nome, email)
         const utenteResp = await fetch("http://localhost:8080/api/getUtentebyId", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

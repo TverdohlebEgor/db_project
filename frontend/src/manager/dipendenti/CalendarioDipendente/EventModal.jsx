@@ -19,7 +19,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [projectsError, setProjectsError] = useState(null);
 
-  // Stato immagini mappato con idComunicazione (NON IdEvento)
   const [eventImagesMap, setEventImagesMap] = useState({});
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
       setDailyDataError(null);
       setProjectsList([]);
       setProjectsError(null);
-      setEventImagesMap({}); // reset immagini al riaprirsi
+      setEventImagesMap({});
     }
   }, [show, selectedDate]);
 
@@ -48,14 +47,13 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
   }, [eventType]);
 
-  // Funzione per caricare immagini usando event.idComunicazione
   const fetchEventImages = async (idComunicazione) => {
     try {
       const imgResponse = await fetch(`http://localhost:8080/api/get/forum/images/${idComunicazione}`);
       if (!imgResponse.ok) {
         throw new Error(`Failed to fetch images for communication ${idComunicazione}, status: ${imgResponse.status}`);
       }
-      const imagesData = await imgResponse.json(); // array di URL o base64
+      const imagesData = await imgResponse.json();
       return imagesData;
     } catch (error) {
       console.error(error);
@@ -63,7 +61,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     }
   };
 
-  // Carichiamo immagini per ogni evento usando idComunicazione
+ 
   useEffect(() => {
     if (!dailyWorkData || dailyWorkData.length === 0) return;
 
@@ -273,7 +271,6 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                             : "In attesa"
                       }</p>
 
-                      {/* Immagini collegate via idComunicazione */}
                       {ev.idComunicazione && eventImagesMap[ev.idComunicazione] && eventImagesMap[ev.idComunicazione].length > 0 && (
                         <div className="d-flex flex-wrap mb-2">
                           {eventImagesMap[ev.idComunicazione].map((imgUrl, index) => (

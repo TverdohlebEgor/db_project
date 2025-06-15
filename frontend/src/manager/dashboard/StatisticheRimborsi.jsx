@@ -10,7 +10,6 @@ import {
   Legend,
 } from "chart.js";
 
-// Registriamo i componenti di chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function StatisticheRimborsi() {
@@ -52,7 +51,6 @@ function StatisticheRimborsi() {
       </div>
     );
 
-  // Raggruppa i dati per valuta
   const groupedByValuta = andamentoMensile.reduce((acc, curr) => {
     const valuta = curr.valuta;
     if (!acc[valuta]) acc[valuta] = [];

@@ -5,12 +5,12 @@ function AggiungiValute({ amministratore }) {
   const [currencyCode, setCurrencyCode] = useState('');
   const [currencySymbol, setCurrencySymbol] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null); // To display success or error messages
+  const [message, setMessage] = useState(null); 
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault(); 
     setLoading(true);
-    setMessage(null); // Clear previous messages
+    setMessage(null); 
 
     if (currencyCode.length !== 3) {
       setMessage({ type: 'danger', text: 'Il codice valuta deve essere di 3 caratteri (es. EUR).' });
@@ -28,18 +28,18 @@ function AggiungiValute({ amministratore }) {
       const response = await fetch('http://localhost:8080/api/add/valuta', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json', // Keep this header
+            'Content-Type': 'application/json', 
           },
-          body: JSON.stringify({ // Send a JSON string
+          body: JSON.stringify({
             code: currencyCode.toUpperCase(),
             symbol: currencySymbol,
-            id: amministratore.idAmministratore // Make sure amministratore.idUtente is defined!
+            id: amministratore.idAmministratore
           }),
         });
 
       if (response.ok) {
         setMessage({ type: 'success', text: 'Valuta aggiunta con successo!' });
-        setCurrencyCode(''); // Clear form fields
+        setCurrencyCode('');
         setCurrencySymbol('');
       } else {
         const errorData = await response.json();
@@ -56,7 +56,6 @@ function AggiungiValute({ amministratore }) {
     <Container className="my-4">
       <Row className="justify-content-md-center">
         <Col md={6}>
-          {/* Aggiungi Valuta Form */}
           <h2 className="mb-3">Funzione amministrativa aggiunta valuta</h2>
           {message && <Alert variant={message.type}>{message.text}</Alert>}
           <Form onSubmit={handleSubmit}>
@@ -104,15 +103,8 @@ function AggiungiValute({ amministratore }) {
           </Form>
         </Col>
       </Row>
-      {/* You can still use the 'data' prop here if needed for other functionalities */}
-      {/* For example:
-      <Row className="mt-4">
-        <Col>
-          <h3>Received Data:</h3>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-        </Col>
-      </Row>
-      */}
+     
+    
     </Container>
   );
 }

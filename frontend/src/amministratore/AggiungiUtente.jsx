@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 
-// Main App component
 const AggiungiUtente = ({ amministratore }) => {
-  // State to hold form data
   const [formData, setFormData] = useState({
     tipo: '',
     nome: '',
@@ -17,32 +15,27 @@ const AggiungiUtente = ({ amministratore }) => {
     iban: '',
   });
 
-  // State to hold validation errors
+  
   const [errors, setErrors] = useState({});
 
-  // State for submission message (success/error)
   const [submitMessage, setSubmitMessage] = useState('');
-  const [submitMessageType, setSubmitMessageType] = useState(''); // 'success' or 'danger'
+  const [submitMessageType, setSubmitMessageType] = useState(''); 
 
-  // Options for dropdowns
   const tipoOptions = ['Dipendente', 'Manager'];
   const contrattoOptions = ['FullTime', 'PartTime', 'Stage', 'Apprendistato'];
 
-  // Handle input changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === 'checkbox' ? checked : value,
     }));
-    // Clear error for the current field as user types
     setErrors((prevErrors) => ({
       ...prevErrors,
       [name]: undefined,
     }));
   };
 
-  // Basic validation function
   const validateForm = () => {
     const newErrors = {};
     if (!formData.tipo) newErrors.tipo = 'Il tipo di utente è obbligatorio.';
@@ -63,12 +56,11 @@ const AggiungiUtente = ({ amministratore }) => {
     if (formData.iban && formData.iban.length !== 27) newErrors.iban = 'L\'IBAN deve contenere 27 caratteri.';
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0; 
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault(); 
 
     if (!validateForm()) {
       setSubmitMessage('Per favore, correggi gli errori nel modulo.');
@@ -97,7 +89,7 @@ const AggiungiUtente = ({ amministratore }) => {
           residenza: '', ral: '', dataDiAssunzione: '', tipoDiContratto: '',
           iban: ''
         });
-        setErrors({}); // Clear any residual errors
+        setErrors({}); 
       } else {
         const errorData = await response.json().catch(() => ({ message: 'Errore sconosciuto' }));
         setSubmitMessage(`Errore durante la registrazione: ${errorData.message || response.statusText}`);
@@ -116,7 +108,6 @@ const AggiungiUtente = ({ amministratore }) => {
       <div className="p-4 rounded-lg shadow-lg bg-white max-w-2xl mx-auto">
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {/* Tipo (Select) */}
           <div className="mb-3">
             <label htmlFor="tipo" className="block text-gray-700 text-sm font-bold mb-2">Tipo Utente:</label>
             <select
@@ -135,7 +126,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.tipo && <div className="text-red-500 text-xs mt-1">{errors.tipo}</div>}
           </div>
 
-          {/* Nome */}
           <div className="mb-3">
             <label htmlFor="nome" className="block text-gray-700 text-sm font-bold mb-2">Nome:</label>
             <input
@@ -150,7 +140,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.nome && <div className="text-red-500 text-xs mt-1">{errors.nome}</div>}
           </div>
 
-          {/* Cognome */}
           <div className="mb-3">
             <label htmlFor="cognome" className="block text-gray-700 text-sm font-bold mb-2">Cognome:</label>
             <input
@@ -165,7 +154,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.cognome && <div className="text-red-500 text-xs mt-1">{errors.cognome}</div>}
           </div>
 
-          {/* Email */}
           <div className="mb-3">
             <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
             <input
@@ -180,7 +168,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
           </div>
 
-          {/* Password */}
           <div className="mb-3">
             <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">Password:</label>
             <input
@@ -195,7 +182,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.password && <div className="text-red-500 text-xs mt-1">{errors.password}</div>}
           </div>
 
-          {/* DataDiNascita */}
           <div className="mb-3">
             <label htmlFor="dataDiNascita" className="block text-gray-700 text-sm font-bold mb-2">Data di Nascita:</label>
             <input
@@ -210,7 +196,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.dataDiNascita && <div className="text-red-500 text-xs mt-1">{errors.dataDiNascita}</div>}
           </div>
 
-          {/* Residenza */}
           <div className="mb-3">
             <label htmlFor="residenza" className="block text-gray-700 text-sm font-bold mb-2">Residenza:</label>
             <input
@@ -225,7 +210,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.residenza && <div className="text-red-500 text-xs mt-1">{errors.residenza}</div>}
           </div>
 
-          {/* RAL */}
           <div className="mb-3">
             <label htmlFor="ral" className="block text-gray-700 text-sm font-bold mb-2">RAL (€):</label>
             <input
@@ -241,7 +225,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.ral && <div className="text-red-500 text-xs mt-1">{errors.ral}</div>}
           </div>
 
-          {/* DataDiAssunzione */}
           <div className="mb-3">
             <label htmlFor="dataDiAssunzione" className="block text-gray-700 text-sm font-bold mb-2">Data di Assunzione:</label>
             <input
@@ -256,7 +239,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.dataDiAssunzione && <div className="text-red-500 text-xs mt-1">{errors.dataDiAssunzione}</div>}
           </div>
 
-          {/* TipoDiContratto (Select) */}
           <div className="mb-3">
             <label htmlFor="tipoDiContratto" className="block text-gray-700 text-sm font-bold mb-2">Tipo di Contratto:</label>
             <select
@@ -275,7 +257,6 @@ const AggiungiUtente = ({ amministratore }) => {
             {errors.tipoDiContratto && <div className="text-red-500 text-xs mt-1">{errors.tipoDiContratto}</div>}
           </div>
 
-          {/* IBAN */}
           <div className="mb-3">
             <label htmlFor="iban" className="block text-gray-700 text-sm font-bold mb-2">IBAN (27 caratteri):</label>
             <input
@@ -291,7 +272,6 @@ const AggiungiUtente = ({ amministratore }) => {
           </div>
 
 
-          {/* Submit Button */}
           <div className="md:col-span-2 text-center mt-4">
             <button
               type="submit"
@@ -302,7 +282,6 @@ const AggiungiUtente = ({ amministratore }) => {
           </div>
         </form>
 
-        {/* Submission Message */}
         {submitMessage && (
           <div
             className={`mt-4 p-3 rounded-md text-center ${submitMessageType === 'success' ? 'bg-green-100 text-green-800' : submitMessageType === 'danger' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}

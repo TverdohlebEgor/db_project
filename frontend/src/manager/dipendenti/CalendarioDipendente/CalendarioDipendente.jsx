@@ -10,7 +10,7 @@ const Calendar = ({dipendente}) => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date()); // State for the month being displayed
+  const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date()); 
 
   const currentMonth = currentDisplayDate.getMonth();
   const currentYear = currentDisplayDate.getFullYear();
@@ -108,7 +108,6 @@ const Calendar = ({dipendente}) => {
     
       <Row className="g-1">
         {renderCalendarDays().map((dayCol, index) => (
-          // Use a new Row every 7 days for the week
           (index % 7 === 0 && index !== 0) ? (
             <React.Fragment key={`row-wrap-${index}`}>
               <div className="w-100"></div> 

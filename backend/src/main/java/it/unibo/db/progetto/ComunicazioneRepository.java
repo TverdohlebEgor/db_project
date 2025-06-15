@@ -48,8 +48,7 @@ public class ComunicazioneRepository {
                 }
             }
 
-            final Integer idProgettoFinal = idProgetto; // qui la variabile finale
-
+            final Integer idProgettoFinal = idProgetto;
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbc.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(

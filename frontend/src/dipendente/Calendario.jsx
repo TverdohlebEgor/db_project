@@ -1,4 +1,3 @@
-// Calendar.jsx
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import EventModal from './EventModal';
@@ -7,15 +6,12 @@ import './Calendario.css';
 const Calendar = ({dipendente}) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date()); // State for the month being displayed
+  const [currentDisplayDate, setCurrentDisplayDate] = useState(new Date());
 
-  // Get month and year from the currentDisplayDate state
   const currentMonth = currentDisplayDate.getMonth();
   const currentYear = currentDisplayDate.getFullYear();
 
-  // Get the first day of the month (0 for Sunday, 6 for Saturday)
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-  // Get the number of days in the current month
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
   const handleDayClick = (day) => {
@@ -43,7 +39,6 @@ const Calendar = ({dipendente}) => {
     });
   };
 
-  // Helper to get month name
   const getMonthName = (monthIndex) => {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -52,19 +47,14 @@ const Calendar = ({dipendente}) => {
     return months[monthIndex];
   };
 
-  // Function to render calendar days
   const renderCalendarDays = () => {
     const days = [];
-    const today = new Date(); // To highlight today's date
-
-    // Add empty cells for the days before the 1st of the month
+    const today = new Date(); 
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<Col key={`empty-${i}`} className="calendar-day empty-day"></Col>);
     }
 
-    // Add day buttons
     for (let day = 1; day <= daysInMonth; day++) {
-      // Check if this day is today's date in the *currently displayed month*
       const isToday = day === today.getDate() &&
                       currentMonth === today.getMonth() &&
                       currentYear === today.getFullYear();
@@ -73,7 +63,7 @@ const Calendar = ({dipendente}) => {
         <Col key={day} className="calendar-day">
           <Button
             variant={isToday ? "primary" : "outline-secondary"}
-            className="w-100 h-100" // Make button fill the cell
+            className="w-100 h-100" 
             onClick={() => handleDayClick(day)}
           >
             {day}
@@ -101,19 +91,18 @@ const Calendar = ({dipendente}) => {
         </Col>
       </Row>
 
-      {/* Day Headers */}
       <Row className="text-center fw-bold mb-2">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <Col key={day}>{day}</Col>
         ))}
       </Row>
-      {/* Calendar Grid */}
-      <Row className="g-1"> {/* g-1 for small gutters between cols */}
+     
+      <Row className="g-1"> 
         {renderCalendarDays().map((dayCol, index) => (
-          // Use a new Row every 7 days for the week
+        
           (index % 7 === 0 && index !== 0) ? (
             <React.Fragment key={`row-wrap-${index}`}>
-              <div className="w-100"></div> {/* Forces a new line */}
+              <div className="w-100"></div> 
               {dayCol}
             </React.Fragment>
           ) : (
@@ -129,7 +118,7 @@ const Calendar = ({dipendente}) => {
         idDipendente={dipendente.idUtente}
       />
 
-      {/* Basic styling for calendar cells, add to your App.css or index.css */}
+      
     </Container>
   );
 };

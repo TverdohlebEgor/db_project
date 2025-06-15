@@ -66,7 +66,7 @@ public class UtenteRepository {
 
         return new RimborsoSpeseDisplay(
                 rs.getInt("idRimborso"),
-                approvato, // Use the Boolean object that can be null
+                approvato,
                 rs.getDouble("importo"),
                 rs.getString("testo"),
                 rs.getString("nome"),
@@ -425,8 +425,8 @@ public class UtenteRepository {
         List<EventoDisplay> eventi = jdbc.query(
                 selectEventoQuery,
                 eventoDisplayRowMapper,
-                Date.valueOf(date), // This is already a java.sql.Date
-                idDipendente // This is already an int
+                Date.valueOf(date),
+                idDipendente 
         );
 
         return eventi;
@@ -444,8 +444,8 @@ public class UtenteRepository {
         List<RimborsoSpeseDisplay> eventi = jdbc.query(
                 selectEventoQuery,
                 rimborsoSpeseRowMapper,
-                Date.valueOf(date), // This is already a java.sql.Date
-                idDipendente // This is already an int
+                Date.valueOf(date), T
+                idDipendente 
         );
 
         return eventi;
@@ -561,7 +561,7 @@ public class UtenteRepository {
             long inizioMillis = inizio.getTime();
             long fineMillis = fine.getTime();
 
-            // Gestione evento che passa la mezzanotte
+          
             if (fineMillis <= inizioMillis) {
                 fineMillis += 24 * 60 * 60 * 1000;
             }

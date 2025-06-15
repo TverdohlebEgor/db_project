@@ -8,7 +8,7 @@ function ProgettoInfo() {
     const location = useLocation();
 
     const { progetto, manager } = location.state || {};
-    const [concluso, setConcluso] = useState(progetto.concluso); // Stato locale aggiornabile
+    const [concluso, setConcluso] = useState(progetto.concluso);
 
     const goToGestioneMembri = () => {
         navigate(`/progetto/${progetto.idProgetto}/gestione`, {
