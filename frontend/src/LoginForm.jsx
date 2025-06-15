@@ -8,9 +8,9 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [data,setData] = useState('')
-  const [amministratoreData,setAmministratoreData] = useState('')
-  const [isAmministratore,setIsAmministratore] = useState(false)
+  const [data, setData] = useState('')
+  const [amministratoreData, setAmministratoreData] = useState('')
+  const [isAmministratore, setIsAmministratore] = useState(false)
 
 
 
@@ -26,24 +26,15 @@ function LoginForm() {
 
   const updateEventi = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/update/eventi', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ date : new Date() })
-      });
-
+      const response = await fetch('http://localhost:8080/api/update/eventi');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-
-      setData(data)
-    } catch (err) {
-        console.log(err)
-      setMessage("Errore email o password errati")
-
+    } catch (error) {
+      console.error('Errore in updateEventi:', error);
     }
-  };
-
+  }
 
   const fetchUsers = async () => {
     try {
@@ -81,6 +72,7 @@ function LoginForm() {
       }
     } catch (err) {
       console.log(err)
+
     }
   }
   if (data.tipo === 'MANAGER') {

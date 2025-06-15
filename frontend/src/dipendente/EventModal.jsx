@@ -4,7 +4,7 @@ import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstr
 
 const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [key, setKey] = useState('hours');
-  const [eventType, setEventType] = useState('Work');
+  const [eventType, setEventType] = useState('Lavoro');
   const [isOvertime, setIsOvertime] = useState(false);
   const [hourStart, setHourStart] = useState('');
   const [hourEnd, setHourEnd] = useState('');
@@ -26,7 +26,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   useEffect(() => {
     if (show) {
       setKey('hours'); // Default to hours tab when opening
-      setEventType('Work');
+      setEventType('Lavoro');
       setIsOvertime(false);
       setHourStart('');
       setHourEnd('');
@@ -42,7 +42,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
 
   // Effect to reset overtime if eventType changes to non-Work
   useEffect(() => {
-    if (eventType !== 'Work') {
+    if (eventType !== 'Lavoro') {
       setIsOvertime(false);
       setHourStart(''); // Also clear hours if not work
       setHourEnd('');
@@ -115,13 +115,13 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   };
 
   const handleSaveEvent = async () => {
-    // Validation check: If eventType is 'Work' and hours are not set
-    if (eventType === 'Work' && (!hourStart || !hourEnd)) {
+    // Validation check: If eventType is 'Lavoro' and hours are not set
+    if (eventType === 'Lavoro' && (!hourStart || !hourEnd)) {
       alert('Please set both Hour Start and Hour End for Work events.');
       return;
     }
     // Validation for project selection if needed (e.g., if project is mandatory for Work events)
-    if (eventType === 'Work' && !selectedProject) {
+    if (eventType === 'Lavoro' && !selectedProject) {
       alert('Please select a project for Work events.');
       return;
     }
@@ -290,16 +290,16 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                 <Form.Label column sm="3">Event Type</Form.Label>
                 <Col sm="9">
                   <Form.Select value={eventType} onChange={(e) => setEventType(e.target.value)}>
-                    <option value="Work">Work</option>
-                    <option value="Holiday">Holiday</option>
-                    <option value="Permission">Permission</option>
-                    <option value="Sickness">Sickness</option>
+                    <option value="Lavoro">Work</option>
+                    <option value="Ferie">Holiday</option>
+                    <option value="Permesso">Permission</option>
+                    <option value="Malattia">Sickness</option>
                   </Form.Select>
                 </Col>
               </Form.Group>
 
               {/* Conditional rendering for Overtime checkbox, Hour inputs, and Project */}
-              {eventType === 'Work' && (
+              {eventType === 'Lavoro' && (
                 <>
                   <Form.Group as={Row} className="mb-3" controlId="formOvertime">
                     <Col sm={{ span: 9, offset: 3 }}>

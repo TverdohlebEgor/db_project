@@ -2,7 +2,6 @@ package it.unibo.db.progetto;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import java.sql.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,29 +32,6 @@ public class EventoRepository {
             rs.getInt("IdUtente"),
             rs.getInt("IdProgetto"),
             rs.getInt("IdComunicazione"));
-
-    public ResponseEntity<List<Evento>> getEventPerDay(Map<String, String> body) {
-        try {
-            Integer idUtente = Integer.parseInt(body.get("idUtente"));
-            String data = body.get("data");
-
-            String sql = "SELECT e.* FROM Evento e " +
-                    "JOIN Formare f ON e.IdEvento = f.IdEvento " +
-                    "JOIN GiornataDiLavoro g ON f.IdGiornata = g.IdGiornata " +
-                    "WHERE e.IdUtente = ? AND g.Data = ?";
-
-            List<Evento> eventi = jdbc.query(
-                    sql,
-                    eventoRowMapper,
-                    idUtente,
-                    Date.valueOf(data));
-
-            return ResponseEntity.ok(eventi);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
 
     @PostMapping("/updateApprovazione")
     public ResponseEntity<?> updateApprovazione(@RequestBody Map<String, String> body) {

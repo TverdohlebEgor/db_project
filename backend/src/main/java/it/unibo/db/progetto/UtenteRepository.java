@@ -13,7 +13,6 @@ import java.sql.PreparedStatement;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -70,21 +69,8 @@ public class UtenteRepository {
                 approvato, // Use the Boolean object that can be null
                 rs.getDouble("importo"),
                 rs.getString("testo"),
-                rs.getString("nome")
-        );
+                rs.getString("nome"));
     };
-
-    private final RowMapper<Evento> eventoRowMapper = (rs, rowNum) -> new Evento(
-            rs.getInt("IdEvento"),
-            rs.getBoolean("Approvato"),
-            rs.getDate("Data").toLocalDate(),
-            TipoEvento.valueOf(normalizeContratto(rs.getString("Tipo"))),
-            rs.getBoolean("Straordinario"),
-            rs.getTime("OraInizio").toLocalTime(),
-            rs.getTime("OraFine").toLocalTime(),
-            rs.getInt("IdUtente"),
-            rs.getInt("IdProgetto"),
-            rs.getInt("IdComunicazione"));
 
     private final RowMapper<EventoDisplay> eventoDisplayRowMapper = (rs, rowNum) -> new EventoDisplay(
             rs.getInt("IdEvento"),
@@ -158,7 +144,8 @@ public class UtenteRepository {
             ral = ral.setScale(2, RoundingMode.HALF_UP);
             System.out.println(ral);
             String sql = "INSERT INTO Utente (" +
-                    "Tipo, Nome, Cognome, Email, Password, DataDiNascita, Residenza, RAL, DataDiAssunzione, TipoDiContratto, IBAN, FerieAccumulate" +
+                    "Tipo, Nome, Cognome, Email, Password, DataDiNascita, Residenza, RAL, DataDiAssunzione, TipoDiContratto, IBAN, FerieAccumulate"
+                    +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             jdbc.update(sql,
                     body.get("tipo"),
@@ -222,21 +209,12 @@ public class UtenteRepository {
         }
     }
 
-    public ResponseEntity<Boolean> updateEventi(Map<String, String> body) {
-        String datestring = body.get("date");
-        if (datestring == null || datestring.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(false);
-        }
-        LocalDate sqlDateParam;
-        try {
-            OffsetDateTime odt = OffsetDateTime.parse(datestring);
-            sqlDateParam = odt.toLocalDate();
-        } catch (Exception e) {
-            System.err.println("Unexpected error: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(false);
-        }
-        jdbc.update("UPDATE Evento SET Approvato = TRUE WHERE (Data + INTERVAL '14 days') > (CAST(? AS DATE))",
-                sqlDateParam);
+    public ResponseEntity<Boolean> updateEventi() {
+        LocalDate cutoffDate = LocalDate.now().minusDays(14);
+        System.out.println(Date.valueOf(cutoffDate));
+
+        jdbc.update("UPDATE Evento SET Approvato = TRUE WHERE Data <= ?", Date.valueOf(cutoffDate));
+
         return ResponseEntity.ok(true);
     }
 
@@ -553,66 +531,64 @@ public class UtenteRepository {
     }
 
     public ResponseEntity<?> aggiornaFerie(@RequestBody Map<String, Integer> body) {
-    try {
-        int idEvento = body.get("idEvento");
+        try {
+            int idEvento = body.get("idEvento");
 
-        String sqlEvento = """
-                    SELECT Tipo, Approvato, OraInizio, OraFine, IdUtente
-                    FROM Evento
-                    WHERE IdEvento = ?
-                """;
+            String sqlEvento = """
+                        SELECT Tipo, Approvato, OraInizio, OraFine, IdUtente
+                        FROM Evento
+                        WHERE IdEvento = ?
+                    """;
 
-        Map<String, Object> evento = jdbc.queryForMap(sqlEvento, idEvento);
+            Map<String, Object> evento = jdbc.queryForMap(sqlEvento, idEvento);
 
-        if (!Boolean.TRUE.equals(evento.get("Approvato"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Evento non approvato.");
+            if (!Boolean.TRUE.equals(evento.get("Approvato"))) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Evento non approvato.");
+            }
+
+            if (!"Lavoro".equalsIgnoreCase((String) evento.get("Tipo"))) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Evento non di lavoro");
+            }
+
+            Time inizio = (Time) evento.get("OraInizio");
+            Time fine = (Time) evento.get("OraFine");
+
+            long inizioMillis = inizio.getTime();
+            long fineMillis = fine.getTime();
+
+            // Gestione evento che passa la mezzanotte
+            if (fineMillis <= inizioMillis) {
+                fineMillis += 24 * 60 * 60 * 1000;
+            }
+
+            long minutiLavorati = (fineMillis - inizioMillis) / (1000 * 60);
+
+            if (minutiLavorati <= 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Durata evento non valida.");
+            }
+
+            double moltiplicatore = 0.1;
+            int minutiFerie = (int) Math.round(minutiLavorati * moltiplicatore);
+
+            int idUtente = (int) evento.get("IdUtente");
+
+            String sqlUpdate = """
+                        UPDATE Utente
+                        SET FerieAccumulate = FerieAccumulate + ?
+                        WHERE IdUtente = ?
+                    """;
+
+            jdbc.update(sqlUpdate, minutiFerie, idUtente);
+
+            return ResponseEntity.ok("Ferie aggiornate con successo: +" + minutiFerie + " minuti");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Errore nel calcolo ferie: " + e.getMessage());
         }
-
-        if (!"Lavoro".equalsIgnoreCase((String) evento.get("Tipo"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Evento non di lavoro");
-        }
-
-        Time inizio = (Time) evento.get("OraInizio");
-        Time fine = (Time) evento.get("OraFine");
-
-        long inizioMillis = inizio.getTime();
-        long fineMillis = fine.getTime();
-
-        // Gestione evento che passa la mezzanotte
-        if (fineMillis <= inizioMillis) {
-            fineMillis += 24 * 60 * 60 * 1000;
-        }
-
-        long minutiLavorati = (fineMillis - inizioMillis) / (1000 * 60);
-
-        if (minutiLavorati <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Durata evento non valida.");
-        }
-
-        double moltiplicatore = 0.1;
-        int minutiFerie = (int) Math.round(minutiLavorati * moltiplicatore);
-
-        int idUtente = (int) evento.get("IdUtente");
-
-        String sqlUpdate = """
-                    UPDATE Utente
-                    SET FerieAccumulate = FerieAccumulate + ?
-                    WHERE IdUtente = ?
-                """;
-
-        jdbc.update(sqlUpdate, minutiFerie, idUtente);
-
-        return ResponseEntity.ok("Ferie aggiornate con successo: +" + minutiFerie + " minuti");
-
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Errore nel calcolo ferie: " + e.getMessage());
     }
-}
-
-
 
 }

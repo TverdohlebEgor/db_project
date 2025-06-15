@@ -30,7 +30,7 @@ public class MainController {
   final RimborsoSpeseRepository rimborsoSpese;
   final ValutaRepository valuta;
 
-  @GetMapping("/progetti/utente") // '{id}' indica una variabile nel percorso
+  @GetMapping("/progetti/utente") 
   public List<Progetto> getProgettiUtenti() {
     return utente.getProgetti();
   }
@@ -40,7 +40,7 @@ public class MainController {
     return comunicazione.findComunicazioniByIdProgetto(selectedTopicId);
   }
 
-  @GetMapping("get/valuta") // '{id}' indica una variabile nel percorso
+  @GetMapping("get/valuta")
   public List<Valuta> getAllValute() {
     return utente.getAllValute();
   }
@@ -50,17 +50,17 @@ public class MainController {
     return utente.addValuta(body);
   }
 
-  @PostMapping("/update/eventi")
-  public ResponseEntity<Boolean> updateEventi(@RequestBody Map<String, String> body) {
-    return utente.updateEventi(body);
+  @GetMapping("/update/eventi")
+  public ResponseEntity<Boolean> updateEventi() {
+    return utente.updateEventi();
   }
 
-  @GetMapping("/get/evento/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
+  @GetMapping("/get/evento/{date}/{idDipendente}") 
   public List<EventoDisplay> getEventiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getEventiDipendentne(date, idDipendente);
   }
 
-  @GetMapping("/get/rimborsi/{date}/{idDipendente}") // '{id}' indica una variabile nel percorso
+  @GetMapping("/get/rimborsi/{date}/{idDipendente}") 
   public List<RimborsoSpeseDisplay> getRimborsiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getRimborsiDipendente(date, idDipendente);
   }
@@ -156,12 +156,6 @@ public class MainController {
   public ResponseEntity<String> removeEmployeeFromManager(@RequestBody Map<String, String> body) {
 
     return utente.removeEmployeeFromManager(body);
-  }
-
-  @PostMapping("/getEventPerDay")
-  public ResponseEntity<List<Evento>> getEventPerDay(@RequestBody Map<String, String> body) {
-
-    return evento.getEventPerDay(body);
   }
 
   @PostMapping("/getProjectsPerManager")

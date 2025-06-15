@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 // Main App component
-const AggiungiUtente = ({amministratore}) => {
+const AggiungiUtente = ({ amministratore }) => {
   // State to hold form data
   const [formData, setFormData] = useState({
     tipo: '',
@@ -57,7 +57,7 @@ const AggiungiUtente = ({amministratore}) => {
     if (!formData.dataDiNascita) newErrors.dataDiNascita = 'La data di nascita è obbligatoria.';
     if (!formData.residenza.trim()) newErrors.residenza = 'La residenza è obbligatoria.';
     if (isNaN(parseFloat(formData.ral)) || parseFloat(formData.ral) <= 0) newErrors.ral = 'Il RAL deve essere un numero positivo.';
-    else if(parseFloat(formData.ral) >= 100000000) newErrors.ral = 'Il RAL non puo 10 milioni';
+    else if (parseFloat(formData.ral) >= 100000000) newErrors.ral = 'Il RAL non puo 10 milioni';
     if (!formData.dataDiAssunzione) newErrors.dataDiAssunzione = 'La data di assunzione è obbligatoria.';
     if (!formData.tipoDiContratto) newErrors.tipoDiContratto = 'Il tipo di contratto è obbligatorio.';
     if (formData.iban && formData.iban.length !== 27) newErrors.iban = 'L\'IBAN deve contenere 27 caratteri.';
@@ -295,7 +295,7 @@ const AggiungiUtente = ({amministratore}) => {
           <div className="md:col-span-2 text-center mt-4">
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out"
+              className="px-6 py-2 rounded-2xl border-2 border-blue-600 text-blue-700 font-semibold bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 transition-all duration-200 ease-in-out transform hover:scale-[1.02] active:scale-[0.98]"
             >
               Registra Utente
             </button>

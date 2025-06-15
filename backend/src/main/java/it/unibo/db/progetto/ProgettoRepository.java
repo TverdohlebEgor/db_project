@@ -73,9 +73,6 @@ public class ProgettoRepository {
         Integer idProgetto = Integer.parseInt(body.get("idProgetto").toString());
         Boolean concluso = Boolean.parseBoolean(body.get("concluso").toString());
 
-        System.out.println(idProgetto);
-        System.out.println(concluso);
-
         jdbc.update("UPDATE Progetto SET Concluso = ? WHERE IdProgetto = ?", concluso, idProgetto);
         return ResponseEntity.ok().build();
     }
