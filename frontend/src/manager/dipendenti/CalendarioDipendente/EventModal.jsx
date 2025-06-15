@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Tabs, Tab, Form, Row, Col, Spinner } from 'react-bootstrap';
+import { Modal, Button, Tabs, Tab, Form, Spinner } from 'react-bootstrap';
 
 const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [key, setKey] = useState('hours');
@@ -8,8 +8,8 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [hourStart, setHourStart] = useState('');
   const [hourEnd, setHourEnd] = useState('');
   const [message, setMessage] = useState('');
-  const [selectedImages, setSelectedImages] = useState([]); 
-  const [selectedProject, setSelectedProject] = useState(''); 
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedProject, setSelectedProject] = useState('');
 
   const [dailyWorkData, setDailyWorkData] = useState(null);
   const [isLoadingDailyData, setIsLoadingDailyData] = useState(false);
@@ -19,35 +19,70 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [projectsError, setProjectsError] = useState(null);
 
+  // Stato immagini mappato con idComunicazione (NON IdEvento)
+  const [eventImagesMap, setEventImagesMap] = useState({});
 
   useEffect(() => {
     if (show) {
-      setKey('hours'); 
+      setKey('hours');
       setEventType('Lavoro');
       setIsOvertime(false);
       setHourStart('');
       setHourEnd('');
       setMessage('');
       setSelectedImages([]);
-      setSelectedProject(''); 
+      setSelectedProject('');
       setDailyWorkData(null);
       setDailyDataError(null);
-      setProjectsList([]); 
+      setProjectsList([]);
       setProjectsError(null);
+      setEventImagesMap({}); // reset immagini al riaprirsi
     }
   }, [show, selectedDate]);
 
   useEffect(() => {
     if (eventType !== 'Lavoro') {
       setIsOvertime(false);
-      setHourStart(''); 
+      setHourStart('');
       setHourEnd('');
     }
   }, [eventType]);
 
+  // Funzione per caricare immagini usando event.idComunicazione
+  const fetchEventImages = async (idComunicazione) => {
+    try {
+      const imgResponse = await fetch(`http://localhost:8080/api/get/forum/images/${idComunicazione}`);
+      if (!imgResponse.ok) {
+        throw new Error(`Failed to fetch images for communication ${idComunicazione}, status: ${imgResponse.status}`);
+      }
+      const imagesData = await imgResponse.json(); // array di URL o base64
+      return imagesData;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  };
+
+  // Carichiamo immagini per ogni evento usando idComunicazione
+  useEffect(() => {
+    if (!dailyWorkData || dailyWorkData.length === 0) return;
+
+    const loadAllImages = async () => {
+      const imagesMap = {};
+      for (const ev of dailyWorkData) {
+        if (ev.idComunicazione) {
+          imagesMap[ev.idComunicazione] = await fetchEventImages(ev.idComunicazione);
+        } else {
+          imagesMap[ev.idComunicazione] = [];
+        }
+      }
+      setEventImagesMap(imagesMap);
+    };
+
+    loadAllImages();
+  }, [dailyWorkData]);
 
   const handleApproval = async (eventId, approve, eventType) => {
-
     try {
       const response = await fetch(`http://localhost:8080/api/updateApprovazione`, {
         method: 'POST',
@@ -60,9 +95,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         throw new Error(`Errore approvazione: ${response.status}. Messaggio: ${errorText}`);
       }
 
-      if (approve && eventType == "LAVORO") {
-
-
+      if (approve && eventType === "LAVORO") {
         const ferieResponse = await fetch('http://localhost:8080/api/aggiornaFerie', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -73,21 +106,19 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
           const msg = await ferieResponse.text();
           throw new Error(`Errore aggiornamento ferie: ${ferieResponse.status} - ${msg}`);
         }
-
       }
 
       const approveStr = approve ? "t" : "f"
       setDailyWorkData(prev =>
         prev.map(ev =>
-          ev.IdEvento === eventId ? { ...ev, approvato: approveStr } : ev  // Aggiorno con stringa
+          ev.IdEvento === eventId ? { ...ev, approvato: approveStr } : ev
         )
       );
     } catch (error) {
       console.error('Errore durante approvazione evento:', error);
       alert(`Errore: ${error.message}`);
     }
-  }
-
+  };
 
   useEffect(() => {
     const fetchDailyData = async () => {
@@ -96,13 +127,12 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         setDailyDataError(null);
         try {
           const dateString = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
-          const response = await fetch(`http://localhost:8080/api/get/evento/` + dateString + '/' + idDipendente);
+          const response = await fetch(`http://localhost:8080/api/get/evento/${dateString}/${idDipendente}`);
           if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
           }
           const data = await response.json();
-     
           setDailyWorkData(data);
         } catch (err) {
           console.error("Failed to fetch daily work data:", err);
@@ -116,27 +146,22 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     fetchDailyData();
   }, [show, selectedDate, key]);
 
-  // Effect for fetching the list of projects
   useEffect(() => {
     const fetchProjects = async () => {
-      if (show && key === 'form' && projectsList.length === 0) { // Fetch only when modal is open, on 'form' tab, and list is empty
+      if (show && key === 'form' && projectsList.length === 0) {
         setIsLoadingProjects(true);
         setProjectsError(null);
         try {
-          // Replace with your actual API endpoint for fetching projects
           const response = await fetch('http://localhost:8080/api/progetti/utente');
           if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
           }
           const data = await response.json();
-          const projectsList = [];
-          for (const projectObject of data) { // 'projectObject' represents each item in the 'data' array
-            projectsList.push(projectObject.nomeProgetto); // Use projectObject.id as the key
-          }
-          setProjectsList(projectsList); // Assuming data is an array of project objects like [{id: 1, name: "Project A"}]
+          const projectsList = data.map(projectObject => projectObject.nomeProgetto);
+          setProjectsList(projectsList);
           if (data.length > 0) {
-            setSelectedProject(data[0].nomeProgetto); // Select the first project by default
+            setSelectedProject(data[0].nomeProgetto);
           }
         } catch (err) {
           console.error("Failed to fetch projects:", err);
@@ -148,48 +173,40 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
     };
 
     fetchProjects();
-  }, [show, key, projectsList.length]); // Dependencies: re-run when modal shows, tab changes, or projectsList is empty
+  }, [show, key, projectsList.length]);
 
   const handleImageChange = (e) => {
-    setSelectedImages(Array.from(e.target.files)); // Store File objects
+    setSelectedImages(Array.from(e.target.files));
   };
 
   const handleSaveEvent = async () => {
-    // Validation check: If eventType is 'Lavoro' and hours are not set
     if (eventType === 'Lavoro' && (!hourStart || !hourEnd)) {
       alert('Please set both Hour Start and Hour End for Work events.');
       return;
     }
-    // Validation for project selection if needed (e.g., if project is mandatory for Work events)
     if (eventType === 'Lavoro' && !selectedProject) {
       alert('Please select a project for Work events.');
       return;
     }
 
-
-    // For sending files, you typically use FormData
     const formData = new FormData();
     formData.append('date', selectedDate ? `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}` : '');
     formData.append('type', eventType);
     formData.append('overtime', isOvertime);
     formData.append('hourStart', hourStart);
     formData.append('hourEnd', hourEnd);
-    formData.append('message', message); // Add message to form data
-    formData.append('projectId', selectedProject); // Add selected project ID
-    formData.append('idDipendente', idDipendente)
+    formData.append('message', message);
+    formData.append('projectId', selectedProject);
+    formData.append('idDipendente', idDipendente);
 
-    selectedImages.forEach((file, index) => {
-      formData.append(`images`, file); // Append each image file
-      // Or if your backend expects a simple array: formData.append('images', file);
+    selectedImages.forEach((file) => {
+      formData.append('images', file);
     });
 
     try {
-      // Replace with your actual API endpoint for adding event (might need to handle multipart/form-data)
       const response = await fetch('http://localhost:8080/api/add/event', {
         method: 'POST',
-        // When sending FormData, DO NOT set 'Content-Type': 'application/json'
-        // The browser sets it automatically as 'multipart/form-data' with the correct boundary
-        body: formData, // Send FormData object directly
+        body: formData,
       });
 
       if (!response.ok) {
@@ -197,7 +214,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         throw new Error(`Failed to save event. Server responded with status: ${response.status}. Message: ${errorText}`);
       }
 
-      const responseData = await response.json();
+      await response.json();
       alert('Event saved successfully!');
       handleClose();
     } catch (error) {
@@ -205,9 +222,9 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
       alert(`Error saving event: ${error.message || 'Please check your network connection and try again.'}`);
     }
   };
+
   const handleDelete = async (idToDelete) => {
     try {
-      // Replace with your actual API endpoint for deleting an event
       const response = await fetch(`http://localhost:8080/api/delete/evento/${idToDelete}`, {
         method: 'DELETE',
       });
@@ -217,281 +234,188 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
         throw new Error(`Failed to delete event. Server responded with status: ${response.status}. Message: ${errorText}`);
       }
 
-      // Update the state to remove the deleted event from the UI
-      setDailyWorkData(prevEvents => prevEvents.filter(event => event.IdEvento !== idToDelete)); // Filter dailyWorkData (the events array)
-      alert('Event deleted successfully!');
+      setDailyWorkData(prev => prev.filter(ev => ev.IdEvento !== idToDelete));
     } catch (error) {
       console.error('Error deleting event:', error);
-      setDailyDataError(`Failed to delete event ${idToDelete}: ${error.message || 'Network error'}`); // Use unified error state
-      alert(`Error deleting event: ${error.message || 'Please check your network connection and try again.'}`);
+      alert(`Error deleting event: ${error.message || 'Network issue.'}`);
     }
   };
 
   return (
-    <Modal show={show} onHide={handleClose} centered size="lg">
+    <Modal show={show} onHide={handleClose} size="lg" backdrop="static" keyboard={false} centered>
       <Modal.Header closeButton>
-        <Modal.Title>
-          {selectedDate ? `Details for ${selectedDate.toLocaleDateString('en-US', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-          })}` : 'Select a Date'}
-        </Modal.Title>
+        <Modal.Title>Eventi per il giorno {selectedDate ? selectedDate.toLocaleDateString() : ''}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Tabs
-          id="event-modal-tabs"
-          activeKey={key}
-          onSelect={(k) => setKey(k)}
-          className="mb-3"
-        >
-          <Tab eventKey="hours" title="Hours of Work">
-            {isLoadingDailyData && <p><Spinner animation="border" size="sm" /> Loading data...</p>}
-            {dailyDataError && <p className="text-danger">{dailyDataError}</p>}
+        <Tabs activeKey={key} onSelect={k => setKey(k)} className="mb-3">
+          <Tab eventKey="hours" title="Ore lavorate">
+            {isLoadingDailyData ? (
+              <div className="text-center my-4"><Spinner animation="border" /></div>
+            ) : dailyDataError ? (
+              <div className="alert alert-danger">{dailyDataError}</div>
+            ) : dailyWorkData && dailyWorkData.length > 0 ? (
+              <div>
+                {dailyWorkData.map(ev => {
+                  const isFinalized = ev.approvato === "t" || ev.approvato === "f";
 
-            {/* Daily Events List - Using dailyWorkData directly as it contains the array of Evento objects */}
-            {!isLoadingDailyData && !dailyDataError && ( // Only render content when not loading and no error
-              <>
-                <h4>Daily Events Overview</h4> {/* Changed title for clarity */}
-                {Array.isArray(dailyWorkData) && dailyWorkData.length > 0 ? (
-                  <div>
-                    {dailyWorkData.map((event) => (
-                      <div key={event.IdEvento ?? `event-${Math.random()}`} // Fallback key for safety
-                        style={{
-                          border: '1px solid #ddd',
-                          padding: '10px',
-                          margin: '10px 0',
-                          borderRadius: '5px',
-                          position: 'relative',
-                          backgroundColor: event.approvato === null ? 'transparent' : (event.approvato === "t" ? '#e6ffe6' : '#ffe6e6')
-                        }}
-                      >
-                        {/* Delete button for each event */}
-                        <button
-                          onClick={() => handleDelete(event.IdEvento)}
-                          style={{
-                            position: 'absolute',
-                            top: '5px',
-                            right: '5px',
-                            background: 'none',
-                            border: 'none',
-                            fontSize: '1.2em',
-                            cursor: 'pointer',
-                            color: 'red'
-                          }}
-                          title="Delete Event" // Hover tooltip
+                  return (
+                    <div key={ev.IdEvento} className="border rounded p-3 mb-3">
+                      <p><strong>Tipo:</strong> {ev.tipo}</p>
+                      <p><strong>Inizio:</strong> {ev.oraInizio || '-'}</p>
+                      <p><strong>Fine:</strong> {ev.oraFine || '-'}</p>
+                      <p><strong>Messaggio:</strong> {ev.messaggio || '-'}</p>
+                      <p><strong>Progetto:</strong> {ev.nomeProgetto || '-'}</p>
+                      <p><strong>Approvato:</strong> {
+                        ev.approvato === "t"
+                          ? "Sì"
+                          : ev.approvato === "f"
+                            ? "No"
+                            : "In attesa"
+                      }</p>
+
+                      {/* Immagini collegate via idComunicazione */}
+                      {ev.idComunicazione && eventImagesMap[ev.idComunicazione] && eventImagesMap[ev.idComunicazione].length > 0 && (
+                        <div className="d-flex flex-wrap mb-2">
+                          {eventImagesMap[ev.idComunicazione].map((imgUrl, index) => (
+                            <img
+                              key={index}
+                              src={imgUrl}
+                              alt={`Immagine evento ${ev.idComunicazione}-${index}`}
+                              style={{
+                                maxWidth: '100px',
+                                maxHeight: '100px',
+                                marginRight: '10px',
+                                objectFit: 'cover',
+                                borderRadius: '5px',
+                                border: '1px solid #ccc'
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="d-flex justify-content-end gap-2">
+                        <Button
+                          variant="success"
+                          size="sm"
+                          disabled={isFinalized}
+                          onClick={() => handleApproval(ev.IdEvento, true, ev.tipo)}
                         >
-                          &times;
-                        </button>
-
-                        {event.tipo === 'LAVORO' ? (
-                          <>
-                            {/* Display full details for 'LAVORO' type */}
-                            <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
-                            <p><strong>Start Time:</strong> {event.oraInizio ?? 'N/A'}</p>
-                            <p><strong>End Time:</strong> {event.oraFine ?? 'N/A'}</p>
-                            <p><strong>Project:</strong> {event.nomeProgetto ?? 'No message provided.'}</p>
-                            <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
-                            <p><strong>Overtime:</strong> {event.staordinario?.toString() ?? 'N/A'}</p>
-                            <p><strong>Approved:</strong> {
-                              event.approvato === null
-                                ? 'Pending'
-                                : event.approvato === "t"
-                                  ? 'Yes'
-                                  : 'No'
-                            }</p>                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                              <Button
-                                variant="success"
-                                size="sm"
-                                onClick={() => handleApproval(event.IdEvento, true, event.tipo)}
-                                disabled={event.approvato !== null}
-                              >
-                                Approva
-                              </Button>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleApproval(event.IdEvento, false, event.tipo)}
-                                disabled={event.approvato !== null}
-                              >
-                                Rifiuta
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <p><strong>Type:</strong> {event.tipo ?? 'N/A'}</p>
-                            <p><strong>Message:</strong> {event.messaggio ?? 'No message provided.'}</p>
-                            <p><strong>Approved:</strong> {
-                              event.approvato === null
-                                ? 'Pending'
-                                : event.approvato === "t"
-                                  ? 'Yes'
-                                  : 'No'
-                            }</p>                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                              <Button
-                                variant="success"
-                                size="sm"
-                                onClick={() => handleApproval(event.IdEvento, true, event.tipo)}
-                                disabled={event.approvato !== null}
-                              >
-                                Approva
-                              </Button>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleApproval(event.IdEvento, false, event.tipo)}
-                                disabled={event.approvato !== null}
-                              >
-                                Rifiuta
-                              </Button>
-                            </div>
-                          </>
-                        )}
+                          Approva
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={isFinalized}
+                          onClick={() => handleApproval(ev.IdEvento, false, ev.tipo)}
+                        >
+                          Rifiuta
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          onClick={() => handleDelete(ev.IdEvento)}
+                        >
+                          Elimina
+                        </Button>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted">No events recorded for this day.</p>
-                )}
-              </>
+                    </div>
+                  );
+                })}
+
+              </div>
+            ) : (
+              <p>Nessun evento registrato per questa data.</p>
             )}
-
-            <hr />
           </Tab>
-          <Tab eventKey="form" title="Add/Edit Event">
+          <Tab eventKey="form" title="Aggiungi evento">
             <Form>
-              <Form.Group as={Row} className="mb-3" controlId="formDate">
-                <Form.Label column sm="3">Date</Form.Label>
-                <Col sm="9">
-                  <Form.Control
-                    type="text"
-                    readOnly
-                    value={selectedDate ? selectedDate.toLocaleDateString() : ''}
-                  />
-                </Col>
+              <Form.Group className="mb-3" controlId="eventType">
+                <Form.Label>Tipo evento</Form.Label>
+                <Form.Select
+                  value={eventType}
+                  onChange={e => setEventType(e.target.value)}
+                >
+                  <option value="Lavoro">Lavoro</option>
+                  <option value="Ferien">Ferie</option>
+                  <option value="Malattia">Malattia</option>
+                  <option value="Altro">Altro</option>
+                </Form.Select>
               </Form.Group>
 
-              <Form.Group as={Row} className="mb-3" controlId="formEventType">
-                <Form.Label column sm="3">Event Type</Form.Label>
-                <Col sm="9">
-                  <Form.Select value={eventType} onChange={(e) => setEventType(e.target.value)}>
-                    <option value="Lavoro">Work</option>
-                    <option value="Ferie">Holiday</option>
-                    <option value="Permesso">Permission</option>
-                    <option value="Malattia">Sickness</option>
-                  </Form.Select>
-                </Col>
-              </Form.Group>
-
-              {/* Conditional rendering for Overtime checkbox, Hour inputs, and Project */}
               {eventType === 'Lavoro' && (
                 <>
-                  <Form.Group as={Row} className="mb-3" controlId="formOvertime">
-                    <Col sm={{ span: 9, offset: 3 }}>
-                      <Form.Check
-                        type="checkbox"
-                        label="Overtime"
-                        checked={isOvertime}
-                        onChange={(e) => setIsOvertime(e.target.checked)}
-                      />
-                    </Col>
+                  <Form.Group className="mb-3" controlId="isOvertime">
+                    <Form.Check
+                      type="checkbox"
+                      label="Straordinario"
+                      checked={isOvertime}
+                      onChange={e => setIsOvertime(e.target.checked)}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId="hourStart">
+                    <Form.Label>Ora inizio</Form.Label>
+                    <Form.Control
+                      type="time"
+                      value={hourStart}
+                      onChange={e => setHourStart(e.target.value)}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3" controlId="hourEnd">
+                    <Form.Label>Ora fine</Form.Label>
+                    <Form.Control
+                      type="time"
+                      value={hourEnd}
+                      onChange={e => setHourEnd(e.target.value)}
+                    />
                   </Form.Group>
 
-                  <Form.Group as={Row} className="mb-3" controlId="formHourStart">
-                    <Form.Label column sm="3">Hour Start</Form.Label>
-                    <Col sm="9">
-                      <Form.Control
-                        type="time"
-                        value={hourStart}
-                        onChange={(e) => setHourStart(e.target.value)}
-                      />
-                    </Col>
-                  </Form.Group>
-
-                  <Form.Group as={Row} className="mb-3" controlId="formHourEnd">
-                    <Form.Label column sm="3">Hour End</Form.Label>
-                    <Col sm="9">
-                      <Form.Control
-                        type="time"
-                        value={hourEnd}
-                        onChange={(e) => setHourEnd(e.target.value)}
-                      />
-                    </Col>
-                  </Form.Group>
-
-                  {/* Project Dropdown */}
-                  <Form.Group as={Row} className="mb-3" controlId="formProject">
-                    <Form.Label column sm="3">Project</Form.Label>
-                    <Col sm="9">
-                      {isLoadingProjects ? (
-                        <p><Spinner animation="border" size="sm" /> Loading projects...</p>
-                      ) : projectsError ? (
-                        <p className="text-danger">{projectsError}</p>
-                      ) : (
-                        <Form.Select
-                          value={selectedProject}
-                          onChange={(e) => setSelectedProject(e.target.value)}
-                          disabled={projectsList.length === 0}
-                        >
-                          <option value="">Select a Project</option>
-                          {projectsList.map((projectName, index) => ( // 'projectName' is the string value, 'index' is its position
-                            <option key={projectName} value={projectName}>
-                              {projectName}
-                            </option>
-                          ))}
-                        </Form.Select>
-                      )}
-                    </Col>
-                  </Form.Group>
+                  {isLoadingProjects ? (
+                    <div className="text-center"><Spinner animation="border" size="sm" /></div>
+                  ) : projectsError ? (
+                    <div className="alert alert-danger">{projectsError}</div>
+                  ) : (
+                    <Form.Group className="mb-3" controlId="projectSelect">
+                      <Form.Label>Progetto</Form.Label>
+                      <Form.Select
+                        value={selectedProject}
+                        onChange={e => setSelectedProject(e.target.value)}
+                      >
+                        {projectsList.map(proj => (
+                          <option key={proj} value={proj}>{proj}</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  )}
                 </>
               )}
 
-              {/* Message Textarea (visible for all event types, if desired) */}
-              <Form.Group as={Row} className="mb-3" controlId="formMessage">
-                <Form.Label column sm="3">Message</Form.Label>
-                <Col sm="9">
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    placeholder="Add a message for this event..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                </Col>
+              <Form.Group className="mb-3" controlId="message">
+                <Form.Label>Messaggio</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                />
               </Form.Group>
 
-              {/* Image Upload Input */}
-              <Form.Group as={Row} className="mb-3" controlId="formImages">
-                <Form.Label column sm="3">Upload Images</Form.Label>
-                <Col sm="9">
-                  <Form.Control
-                    type="file"
-                    multiple // Allows selecting multiple files
-                    onChange={handleImageChange}
-                  />
-                  {selectedImages.length > 0 && (
-                    <div className="mt-2">
-                      <small className="text-muted">
-                        Selected: {selectedImages.map(file => file.name).join(', ')}
-                      </small>
-                    </div>
-                  )}
-                </Col>
+              <Form.Group className="mb-3" controlId="fileUpload">
+                <Form.Label>Allega immagini</Form.Label>
+                <Form.Control
+                  type="file"
+                  multiple
+                  onChange={handleImageChange}
+                />
               </Form.Group>
 
+              <Button variant="primary" onClick={handleSaveEvent}>
+                Salva
+              </Button>
             </Form>
           </Tab>
         </Tabs>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Close
-        </Button>
-        {key === 'form' && (
-          <Button variant="primary" onClick={handleSaveEvent}>
-            Save Event
-          </Button>
-        )}
-      </Modal.Footer>
     </Modal>
   );
 };

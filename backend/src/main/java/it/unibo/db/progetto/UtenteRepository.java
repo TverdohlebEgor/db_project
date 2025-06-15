@@ -69,7 +69,9 @@ public class UtenteRepository {
                 approvato, // Use the Boolean object that can be null
                 rs.getDouble("importo"),
                 rs.getString("testo"),
-                rs.getString("nome"));
+                rs.getString("nome"),
+                rs.getInt("idComunicazione"));
+
     };
 
     private final RowMapper<EventoDisplay> eventoDisplayRowMapper = (rs, rowNum) -> new EventoDisplay(
@@ -81,7 +83,8 @@ public class UtenteRepository {
             rs.getTime("OraInizio").toLocalTime(),
             rs.getTime("OraFine").toLocalTime(),
             rs.getString("nomeProgetto"),
-            rs.getString("testo"));
+            rs.getString("testo"),
+            rs.getInt("idComunicazione"));
 
     public List<Utente> findAll() {
         return jdbc.query("SELECT * FROM Utente", utenteRowMapper);
@@ -410,7 +413,7 @@ public class UtenteRepository {
 
     public List<EventoDisplay> getEventiDipendentne(String date, int idDipendente) {
         String selectEventoQuery = "SELECT E.IdEvento, E.approvato, E.data, E.tipo" +
-                ", E.straordinario, E.oraInizio, E.oraFine, P.nomeProgetto, C.testo " +
+                ", E.straordinario, E.oraInizio, E.oraFine, P.nomeProgetto, C.testo, C.idComunicazione " +
                 "FROM EVENTO AS E,  " +
                 "COMUNICAZIONE AS C, " +
                 "PROGETTO AS P " +
@@ -430,7 +433,7 @@ public class UtenteRepository {
     }
 
     public List<RimborsoSpeseDisplay> getRimborsiDipendente(String date, int idDipendente) {
-        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome " +
+        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome, C.idComunicazione " +
                 "FROM RIMBORSOSPESE AS R,  " +
                 "COMUNICAZIONE AS C, " +
                 "VALUTA AS V " +

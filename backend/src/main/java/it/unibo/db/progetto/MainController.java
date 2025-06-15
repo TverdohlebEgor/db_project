@@ -30,7 +30,7 @@ public class MainController {
   final RimborsoSpeseRepository rimborsoSpese;
   final ValutaRepository valuta;
 
-  @GetMapping("/progetti/utente") 
+  @GetMapping("/progetti/utente")
   public List<Progetto> getProgettiUtenti() {
     return utente.getProgetti();
   }
@@ -55,12 +55,12 @@ public class MainController {
     return utente.updateEventi();
   }
 
-  @GetMapping("/get/evento/{date}/{idDipendente}") 
+  @GetMapping("/get/evento/{date}/{idDipendente}")
   public List<EventoDisplay> getEventiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getEventiDipendentne(date, idDipendente);
   }
 
-  @GetMapping("/get/rimborsi/{date}/{idDipendente}") 
+  @GetMapping("/get/rimborsi/{date}/{idDipendente}")
   public List<RimborsoSpeseDisplay> getRimborsiDipendente(@PathVariable String date, @PathVariable int idDipendente) {
     return utente.getRimborsiDipendente(date, idDipendente);
   }
@@ -92,6 +92,11 @@ public class MainController {
     return comunicazione.updateVisualizzato(body);
   }
 
+  @PostMapping("/isVisualized")
+  public ResponseEntity<Boolean> isVisualizzato(@RequestBody Map<String, String> body) {
+    return comunicazione.isVisualizzato(body);
+  }
+
   @PostMapping("/allEmployeesNotAssociatedWith")
   public ResponseEntity<List<Utente>> getAllEmployeesNotAssociatedWith(@RequestBody Map<String, String> body) {
 
@@ -107,11 +112,11 @@ public class MainController {
   public ResponseEntity<Amministratore> logiAmministratore(@RequestBody Map<String, String> body) {
     return utente.amministratoreLogin(body);
   }
+
   @PostMapping("/add/utente")
   public ResponseEntity<Boolean> addUtente(@RequestBody Map<String, String> body) {
     return utente.addUtente(body);
   }
-
 
   @PostMapping(value = "/add/event", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Boolean> addEvent(

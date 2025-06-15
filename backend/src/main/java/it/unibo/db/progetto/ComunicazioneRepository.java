@@ -101,6 +101,24 @@ public class ComunicazioneRepository {
         return comunicazioni;
     }
 
+    public ResponseEntity<Boolean> isVisualizzato(@RequestBody Map<String, String> body) {
+        try {
+            int idComunicazione = Integer.parseInt(body.get("idComunicazione"));
+            int idUtente = Integer.parseInt(body.get("idUtente"));
+
+            Integer count = jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM Visualizzare WHERE IdComunicazione = ? AND IdUtente = ?",
+                    Integer.class, idComunicazione, idUtente);
+
+            boolean isVisualized = (count != null && count > 0);
+            return ResponseEntity.ok(isVisualized);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     public ResponseEntity<Boolean> updateVisualizzato(@RequestBody Map<String, String> body) {
         try {
             if (body.get("isVisualized") == "true") {

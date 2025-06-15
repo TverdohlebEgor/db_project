@@ -5,5 +5,6 @@ public record RimborsoSpeseDisplay(
         Boolean approvato,
         double importo,
         String testo,
-        String nome) {
+        String nome,
+        int idComunicazione) {
 }

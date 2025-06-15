@@ -17,7 +17,8 @@ const MessageItem = ({
   fetchImagesForMessage,
   imagesByMessage,
   isLoadingImages,
-  imagesError
+  imagesError,
+  isAlreadyVisualized
 }) => {
   const [zoomedImage, setZoomedImage] = useState(null);
 
@@ -37,7 +38,6 @@ const MessageItem = ({
     imagesError
   ]);
 
-  // Funzione per chiudere lightbox
   const closeZoom = () => setZoomedImage(null);
 
   return (
@@ -56,6 +56,7 @@ const MessageItem = ({
                   checked={message.isVisualized ?? false}
                   onChange={() => handleVisualizedChange(message.idComunicazione, message.isVisualized)}
                   className="flex-shrink-0"
+                  disabled={isAlreadyVisualized} // disabilita checkbox se già visualizzato
                 />
               </div>
             </Col>
@@ -72,7 +73,7 @@ const MessageItem = ({
               </Alert>
             ) : imagesByMessage[message.idComunicazione] &&
               imagesByMessage[message.idComunicazione].length > 0 ? (
-              <Row xs={1} md={2} lg={3} className="g-3"> {/* g-3 dà più spazio */}
+              <Row xs={1} md={2} lg={3} className="g-3">
                 {imagesByMessage[message.idComunicazione].map((imgUrl, idx) => (
                   <Col key={`${message.idComunicazione}_${idx}`}>
                     <img
@@ -131,7 +132,7 @@ const MessageItem = ({
               boxShadow: '0 0 20px rgba(255,255,255,0.6)',
               borderRadius: '8px'
             }}
-            onClick={(e) => e.stopPropagation()} // Previene chiusura se clicco sull’immagine
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
@@ -157,6 +158,9 @@ const Forum = ({ dipendente }) => {
   const [imagesByMessage, setImagesByMessage] = useState({});
   const [isLoadingImages, setIsLoadingImages] = useState({});
   const [imagesError, setImagesError] = useState({});
+
+  // Stato per sapere se messaggio già visualizzato (map idComunicazione -> boolean)
+  const [alreadyVisualizedMap, setAlreadyVisualizedMap] = useState({});
 
   // --- Fetch Topics ---
   useEffect(() => {
@@ -190,34 +194,6 @@ const Forum = ({ dipendente }) => {
     fetchTopics();
   }, []);
 
-  // --- Fetch Messages for Selected Topic ---
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (selectedTopicId !== null) {
-        setIsLoadingMessages(true);
-        setMessagesError(null);
-        try {
-          const response = await fetch(`http://localhost:8080/api/get/forum/messages/${selectedTopicId}`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const data = await response.json();
-          setMessages(data);
-          // Reset image caches on topic change
-          setImagesByMessage({});
-          setIsLoadingImages({});
-          setImagesError({});
-        } catch (err) {
-          console.error('Failed to fetch messages:', err);
-          setMessagesError(`Failed to load messages: ${err.message}`);
-        } finally {
-          setIsLoadingMessages(false);
-        }
-      }
-    };
-    fetchMessages();
-  }, [selectedTopicId]);
-
   // --- Fetch Images for a Message ---
   const fetchImagesForMessage = useCallback(
     async (messageId) => {
@@ -231,8 +207,6 @@ const Forum = ({ dipendente }) => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-
-        console.log(`Immagini per messaggio ${messageId}:`, data); // Debug
 
         if (!Array.isArray(data)) {
           throw new Error('La risposta non è un array di immagini');
@@ -249,8 +223,69 @@ const Forum = ({ dipendente }) => {
     [isLoadingImages, imagesByMessage]
   );
 
+  // --- Check if message is already visualized ---
+  const checkIsVisualized = useCallback(async (messageId) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/isVisualized', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idComunicazione: messageId.toString(),
+          idUtente: dipendente.idUtente.toString()
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const isVisualized = await response.json();
+      setAlreadyVisualizedMap((prev) => ({ ...prev, [messageId]: isVisualized }));
+    } catch (err) {
+      console.error(`Failed to check visualized status for message ${messageId}:`, err);
+      setAlreadyVisualizedMap((prev) => ({ ...prev, [messageId]: false })); // default false on error
+    }
+  }, [dipendente.idUtente]);
+
+  // --- Fetch Messages for Selected Topic ---
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (selectedTopicId !== null) {
+        setIsLoadingMessages(true);
+        setMessagesError(null);
+        try {
+          const response = await fetch(`http://localhost:8080/api/get/forum/messages/${selectedTopicId}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+
+          setMessages(data);
+          setImagesByMessage({});
+          setIsLoadingImages({});
+          setImagesError({});
+
+          // Reset visualized map e lancio controllo per ogni messaggio
+          setAlreadyVisualizedMap({});
+          data.forEach(msg => {
+            checkIsVisualized(msg.idComunicazione);
+          });
+
+        } catch (err) {
+          console.error('Failed to fetch messages:', err);
+          setMessagesError(`Failed to load messages: ${err.message}`);
+        } finally {
+          setIsLoadingMessages(false);
+        }
+      }
+    };
+    fetchMessages();
+  }, [selectedTopicId, checkIsVisualized]);
+
   // --- Update Visualized Status ---
   const handleVisualizedChange = async (messageId, currentVisualizedStatus) => {
+    // Se è già stato visualizzato (checkbox disabilitato), blocchiamo cambiamenti (precauzione)
+    if (alreadyVisualizedMap[messageId]) return;
+
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
         msg.idComunicazione === messageId ? { ...msg, isVisualized: !currentVisualizedStatus } : msg
@@ -277,6 +312,10 @@ const Forum = ({ dipendente }) => {
         );
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
+      // Se è stato aggiornato correttamente, blocchiamo la checkbox
+      setAlreadyVisualizedMap((prev) => ({ ...prev, [messageId]: true }));
+
     } catch (err) {
       console.error(`Failed to update visualized status for message ${messageId}:`, err);
       alert(`Failed to update visualized status: ${err.message}. Please try again.`);
@@ -297,23 +336,23 @@ const Forum = ({ dipendente }) => {
                   <Spinner animation="border" size="sm" /> Loading topics...
                 </ListGroup.Item>
               ) : topicsError ? (
-                <ListGroup.Item className="text-danger text-center">{topicsError}</ListGroup.Item>
-              ) : topics.length > 0 ? (
+                <ListGroup.Item className="text-danger">{topicsError}</ListGroup.Item>
+              ) : topics.length === 0 ? (
+                <ListGroup.Item>No projects found</ListGroup.Item>
+              ) : (
                 topics.map((topic) => (
                   <ListGroup.Item
                     key={topic.idProgetto}
                     action
+                    active={topic.idProgetto === selectedTopicId}
                     onClick={() => {
                       setSelectedTopicId(topic.idProgetto);
                       setSelectedTopicName(topic.nomeProgetto);
                     }}
-                    active={topic.idProgetto === selectedTopicId}
                   >
                     {topic.nomeProgetto}
                   </ListGroup.Item>
                 ))
-              ) : (
-                <ListGroup.Item className="text-muted text-center">Nessun Progetto disponibile</ListGroup.Item>
               )}
             </ListGroup>
           </Card>
@@ -321,32 +360,35 @@ const Forum = ({ dipendente }) => {
 
         {/* Messages */}
         <Col md={8}>
-          <Card>
-            <Card.Header className="fw-bold">Messaggi: {selectedTopicName || '-'}</Card.Header>
-            <Card.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-              {isLoadingMessages ? (
-                <div className="text-center">
-                  <Spinner animation="border" /> Loading messages...
-                </div>
-              ) : messagesError ? (
-                <Alert variant="danger">{messagesError}</Alert>
-              ) : messages.length > 0 ? (
-                messages.map((message) => (
-                  <MessageItem
-                    key={message.idComunicazione}
-                    message={message}
-                    handleVisualizedChange={handleVisualizedChange}
-                    fetchImagesForMessage={fetchImagesForMessage}
-                    imagesByMessage={imagesByMessage}
-                    isLoadingImages={isLoadingImages}
-                    imagesError={imagesError}
-                  />
-                ))
-              ) : (
-                <div className="text-center text-muted">Nessun messaggio disponibile.</div>
-              )}
-            </Card.Body>
-          </Card>
+          <h3>{selectedTopicName ?? 'Seleziona un progetto'}</h3>
+          {isLoadingMessages ? (
+            <div className="text-center my-4">
+              <Spinner animation="border" size="lg" />
+            </div>
+          ) : messagesError ? (
+            <Alert variant="danger">{messagesError}</Alert>
+          ) : messages.length === 0 ? (
+            <Alert variant="info">Nessun messaggio per questo progetto.</Alert>
+          ) : (
+            messages.map((message) => (
+              <MessageItem
+                key={message.idComunicazione}
+                message={{
+                  ...message,
+                  isVisualized:
+                    typeof message.isVisualized === 'boolean'
+                      ? message.isVisualized
+                      : alreadyVisualizedMap[message.idComunicazione] || false,
+                }}
+                handleVisualizedChange={handleVisualizedChange}
+                fetchImagesForMessage={fetchImagesForMessage}
+                imagesByMessage={imagesByMessage}
+                isLoadingImages={isLoadingImages}
+                imagesError={imagesError}
+                isAlreadyVisualized={alreadyVisualizedMap[message.idComunicazione]}
+              />
+            ))
+          )}
         </Col>
       </Row>
     </Container>
