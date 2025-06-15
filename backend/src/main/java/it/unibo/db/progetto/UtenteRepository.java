@@ -426,14 +426,13 @@ public class UtenteRepository {
                 selectEventoQuery,
                 eventoDisplayRowMapper,
                 Date.valueOf(date),
-                idDipendente 
-        );
+                idDipendente);
 
         return eventi;
     }
 
     public List<RimborsoSpeseDisplay> getRimborsiDipendente(String date, int idDipendente) {
-        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome, C.idComunicazione " +
+        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome " +
                 "FROM RIMBORSOSPESE AS R,  " +
                 "COMUNICAZIONE AS C, " +
                 "VALUTA AS V " +
@@ -444,7 +443,7 @@ public class UtenteRepository {
         List<RimborsoSpeseDisplay> eventi = jdbc.query(
                 selectEventoQuery,
                 rimborsoSpeseRowMapper,
-                Date.valueOf(date), T
+                Date.valueOf(date), 
                 idDipendente 
         );
 
@@ -561,7 +560,6 @@ public class UtenteRepository {
             long inizioMillis = inizio.getTime();
             long fineMillis = fine.getTime();
 
-          
             if (fineMillis <= inizioMillis) {
                 fineMillis += 24 * 60 * 60 * 1000;
             }
