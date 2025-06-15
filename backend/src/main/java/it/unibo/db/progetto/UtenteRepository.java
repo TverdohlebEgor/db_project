@@ -432,7 +432,7 @@ public class UtenteRepository {
     }
 
     public List<RimborsoSpeseDisplay> getRimborsiDipendente(String date, int idDipendente) {
-        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome " +
+        String selectEventoQuery = "SELECT R.idRimborso, R.approvato, R.importo, C.testo, V.nome, C.idComunicazione " +
                 "FROM RIMBORSOSPESE AS R,  " +
                 "COMUNICAZIONE AS C, " +
                 "VALUTA AS V " +
@@ -443,9 +443,8 @@ public class UtenteRepository {
         List<RimborsoSpeseDisplay> eventi = jdbc.query(
                 selectEventoQuery,
                 rimborsoSpeseRowMapper,
-                Date.valueOf(date), 
-                idDipendente 
-        );
+                Date.valueOf(date),
+                idDipendente);
 
         return eventi;
     }

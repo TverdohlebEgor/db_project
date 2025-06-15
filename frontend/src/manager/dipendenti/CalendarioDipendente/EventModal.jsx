@@ -336,7 +336,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                   <option value="Lavoro">Lavoro</option>
                   <option value="Ferie">Ferie</option>
                   <option value="Malattia">Malattia</option>
-                  <option value="Altro">Altro</option>
+                  <option value="Permesso">Permesso</option>
                 </Form.Select>
               </Form.Group>
 
