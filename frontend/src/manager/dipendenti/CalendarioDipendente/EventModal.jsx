@@ -334,7 +334,7 @@ const EventModal = ({ show, handleClose, selectedDate, idDipendente }) => {
                   onChange={e => setEventType(e.target.value)}
                 >
                   <option value="Lavoro">Lavoro</option>
-                  <option value="Ferien">Ferie</option>
+                  <option value="Ferie">Ferie</option>
                   <option value="Malattia">Malattia</option>
                   <option value="Altro">Altro</option>
                 </Form.Select>
